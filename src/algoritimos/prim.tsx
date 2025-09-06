@@ -1,7 +1,7 @@
 import type { GrafoData, Aresta } from '../types/grafo';
 
 export interface PrimResult {
-  mst: Aresta[];
+  arestas: Aresta[];
   pesoTotal: number;
   passos: string[];
 }
@@ -13,7 +13,7 @@ export function prim(grafo: GrafoData, inicio: string): PrimResult {
   const verticeInicial = vertices.find(v => v.id === inicio);
   if (!verticeInicial) {
     return {
-      mst: [],
+      arestas: [],
       pesoTotal: 0,
       passos: ['Vértice inicial não encontrado'],
     };
@@ -52,7 +52,7 @@ export function prim(grafo: GrafoData, inicio: string): PrimResult {
       break;
     }
 
-    // Adiciona a aresta à MST
+    // Adiciona a aresta à AGM
     mst.push(menorAresta);
     pesoTotal += menorAresta.peso;
 
@@ -66,13 +66,13 @@ export function prim(grafo: GrafoData, inicio: string): PrimResult {
     passos.push(
       `Adicionada aresta: ${menorAresta.origem} ↔ ${menorAresta.destino} (peso: ${menorAresta.peso})`
     );
-    passos.push(`Vértice ${novoVertice} adicionado à MST`);
+    passos.push(`Vértice ${novoVertice} adicionado à AGM`);
   }
 
   passos.push(`Árvore Geradora Mínima concluída. Peso total: ${pesoTotal}`);
 
   return {
-    mst,
+    arestas: mst,
     pesoTotal,
     passos,
   };

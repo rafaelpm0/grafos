@@ -4,13 +4,25 @@ import type { Aresta, Vertice } from '../types/grafo';
 interface ArestaComponentProps {
   aresta: Aresta;
   vertices: Vertice[];
+  arestaColorida: Aresta[];
 }
 
-const ArestaComponent: React.FC<ArestaComponentProps> = ({ aresta, vertices }) => {
+const ArestaComponent: React.FC<ArestaComponentProps> = ({
+  aresta,
+  vertices,
+  arestaColorida,
+}) => {
   const origem = vertices.find(v => v.id === aresta.origem);
   const destino = vertices.find(v => v.id === aresta.destino);
 
   if (!origem || !destino) return null;
+
+  // Verifica se a aresta deve ser destacada
+  const isHighlighted = arestaColorida.some(
+    a =>
+      (a.origem === aresta.origem && a.destino === aresta.destino) ||
+      (a.origem === aresta.destino && a.destino === aresta.origem)
+  );
 
   // Calcular ponto médio para posicionar o texto do peso
   const midX = (origem.x + destino.x) / 2;
@@ -23,8 +35,8 @@ const ArestaComponent: React.FC<ArestaComponentProps> = ({ aresta, vertices }) =
         y1={origem.y}
         x2={destino.x}
         y2={destino.y}
-        stroke="#64748b"
-        strokeWidth="2"
+        stroke={isHighlighted ? '#f59e42' : '#64748b'}
+        strokeWidth={isHighlighted ? '4' : '2'}
         className="pointer-events-none"
       />
       {/* Fundo branco para o texto do peso */}
@@ -33,8 +45,8 @@ const ArestaComponent: React.FC<ArestaComponentProps> = ({ aresta, vertices }) =
         cy={midY}
         r="12"
         fill="white"
-        stroke="#64748b"
-        strokeWidth="1"
+        stroke={isHighlighted ? '#f59e42' : '#64748b'}
+        strokeWidth={isHighlighted ? '2' : '1'}
         className="pointer-events-none"
       />
       {/* Texto do peso */}

@@ -1,26 +1,64 @@
 import { useState } from 'react';
-import type { GrafoData } from '../types/grafo';
+import type { GrafoData, Aresta } from '../types/grafo';
 import { prim, type PrimResult } from '../algoritimos/prim';
+import { buscaEmLargura, type BFResult } from '../algoritimos/bf';
+import { buscaEmProfundidade, type DFSResult } from '../algoritimos/dfs';
+import {
+  encontrarComponentesConexas,
+  type ComponentesCaixas,
+} from '../algoritimos/componentes';
+import ResultadoPrim from './ResultadoPrim';
+import ResultadoBFS from './ResultadoBFS';
+import ResultadoDFS from './ResultadoDFS';
+import ResultadoComponentes from './ResultadoComponentes';
 
 interface AlgoritmoResultadoProps {
   algoritmoSelecionado: string;
   grafoData: GrafoData;
+  setArestasSelecionadas: (arestas: Aresta[]) => void;
 }
 
 function AlgoritmoResultado({
   algoritmoSelecionado,
+  setArestasSelecionadas,
   grafoData,
 }: AlgoritmoResultadoProps) {
   const [verticeInicial, setVerticeInicial] = useState<string>('');
-  const [resultado, setResultado] = useState<PrimResult | null>(null);
+  const [resultado, setResultado] = useState<
+    PrimResult | BFResult | DFSResult | ComponentesCaixas | null
+  >(null);
 
   const executarAlgoritmo = () => {
-    if (!verticeInicial.trim()) return;
-
     switch (algoritmoSelecionado) {
       case 'prim': {
+        if (!verticeInicial.trim()) return;
         const resultadoPrim = prim(grafoData, verticeInicial);
+        setArestasSelecionadas(resultadoPrim.arestas);
+        console.log('Resultado Prim:', resultadoPrim);
         setResultado(resultadoPrim);
+        break;
+      }
+      case 'bfs': {
+        if (!verticeInicial.trim()) return;
+        const resultadoBFS = buscaEmLargura(grafoData, verticeInicial);
+        setArestasSelecionadas(resultadoBFS.arestas);
+        console.log('Resultado BFS:', resultadoBFS);
+        setResultado(resultadoBFS);
+        break;
+      }
+      case 'dfs': {
+        if (!verticeInicial.trim()) return;
+        const resultadoDFS = buscaEmProfundidade(grafoData, verticeInicial);
+        setArestasSelecionadas(resultadoDFS.arestas);
+        console.log('Resultado DFS:', resultadoDFS);
+        setResultado(resultadoDFS);
+        break;
+      }
+      case 'componentes': {
+        const resultadoComponentes = encontrarComponentesConexas(grafoData);
+        setArestasSelecionadas([]);
+        console.log('Resultado Componentes:', resultadoComponentes);
+        setResultado(resultadoComponentes);
         break;
       }
       default:
@@ -33,41 +71,111 @@ function AlgoritmoResultado({
     setVerticeInicial('');
   };
 
+  // Funções auxiliares para verificar tipos
+  const isBFSResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas
+  ): result is BFResult => {
+    return (
+      'ordemVisita' in result &&
+      'arvoreExpansao' in result &&
+      'arestas' in result
+    );
+  };
+
+  const isDFSResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas
+  ): result is DFSResult => {
+    return 'tempoDescoberta' in result && 'tempoFinalizacao' in result;
+  };
+
+  const isComponentesResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas
+  ): result is ComponentesCaixas => {
+    return 'componentes' in result && 'totalComponentes' in result;
+  };
+
   if (algoritmoSelecionado === 'nenhum') {
     return null;
   }
 
+  const getBackgroundColor = () => {
+    if (!resultado) return 'bg-purple-50';
+    if (isBFSResult(resultado)) return 'bg-blue-50';
+    if (isDFSResult(resultado)) return 'bg-green-50';
+    if (isComponentesResult(resultado)) return 'bg-orange-50';
+    return 'bg-purple-50'; // Prim
+  };
+
+  const getIconColor = () => {
+    if (!resultado) return 'bg-purple-500';
+    if (isBFSResult(resultado)) return 'bg-blue-500';
+    if (isDFSResult(resultado)) return 'bg-green-500';
+    if (isComponentesResult(resultado)) return 'bg-orange-500';
+    return 'bg-purple-500'; // Prim
+  };
+
+  const getAlgorithmName = () => {
+    switch (algoritmoSelecionado) {
+      case 'bfs':
+        return 'BUSCA EM LARGURA (BFS)';
+      case 'dfs':
+        return 'BUSCA EM PROFUNDIDADE (DFS)';
+      case 'componentes':
+        return 'COMPONENTES CONEXAS';
+      case 'prim':
+        return 'PRIM (AGM)';
+      default:
+        return algoritmoSelecionado.toUpperCase();
+    }
+  };
+
   return (
-    <div className="p-4 bg-purple-50 rounded-lg">
+    <div className={`p-4 rounded-lg ${getBackgroundColor()}`}>
       <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
-        <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-        Resultado do Algoritmo: {algoritmoSelecionado.toUpperCase()}
+        <span className={`w-2 h-2 rounded-full mr-2 ${getIconColor()}`}></span>
+        Resultado do Algoritmo: {getAlgorithmName()}
       </h3>
 
       {/* Controles do algoritmo */}
       <div className="mb-4">
         <div className="flex gap-2 items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Vértice inicial:
-            </label>
-            <select
-              value={verticeInicial}
-              onChange={e => setVerticeInicial(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Selecione um vértice</option>
-              {grafoData.vertices.map(vertice => (
-                <option key={vertice.id} value={vertice.id}>
-                  {vertice.nome}
-                </option>
-              ))}
-            </select>
-          </div>
+          {algoritmoSelecionado !== 'componentes' && (
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Vértice inicial:
+              </label>
+              <select
+                value={verticeInicial}
+                onChange={e => setVerticeInicial(e.target.value)}
+                className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 ${
+                  algoritmoSelecionado === 'bfs'
+                    ? 'focus:ring-blue-500 focus:border-blue-500'
+                    : algoritmoSelecionado === 'dfs'
+                    ? 'focus:ring-green-500 focus:border-green-500'
+                    : 'focus:ring-purple-500 focus:border-purple-500'
+                }`}
+              >
+                <option value="">Selecione um vértice</option>
+                {grafoData.vertices.map(vertice => (
+                  <option key={vertice.id} value={vertice.id}>
+                    {vertice.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <button
             onClick={executarAlgoritmo}
-            disabled={!verticeInicial}
-            className="px-4 py-2 bg-purple-500 text-white rounded-md text-sm hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            disabled={algoritmoSelecionado !== 'componentes' && !verticeInicial}
+            className={`px-4 py-2 text-white rounded-md text-sm focus:outline-none focus:ring-2 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors ${
+              algoritmoSelecionado === 'bfs'
+                ? 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500'
+                : algoritmoSelecionado === 'dfs'
+                ? 'bg-green-500 hover:bg-green-600 focus:ring-green-500'
+                : algoritmoSelecionado === 'componentes'
+                ? 'bg-orange-500 hover:bg-orange-600 focus:ring-orange-500'
+                : 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-500'
+            }`}
           >
             Executar
           </button>
@@ -84,65 +192,16 @@ function AlgoritmoResultado({
 
       {/* Resultados */}
       {resultado && (
-        <div className="space-y-4">
-          {/* Resumo */}
-          <div className="bg-white p-3 rounded border">
-            <h4 className="font-medium text-gray-700 mb-2">Resumo da MST:</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <strong>Arestas na MST:</strong> {resultado.mst.length}
-              </div>
-              <div>
-                <strong>Peso Total:</strong> {resultado.pesoTotal}
-              </div>
-            </div>
-          </div>
-
-          {/* Arestas da MST */}
-          <div className="bg-white p-3 rounded border">
-            <h4 className="font-medium text-gray-700 mb-2">
-              Arestas Selecionadas:
-            </h4>
-            {resultado.mst.length > 0 ? (
-              <div className="space-y-1">
-                {resultado.mst.map((aresta, index) => (
-                  <div
-                    key={index}
-                    className="text-sm text-gray-600 bg-green-50 p-2 rounded"
-                  >
-                    <strong>
-                      {aresta.origem} ↔ {aresta.destino}
-                    </strong>{' '}
-                    (peso: {aresta.peso})
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500 italic">
-                Nenhuma aresta encontrada
-              </p>
-            )}
-          </div>
-
-          {/* Passos do algoritmo */}
-          <div className="bg-white p-3 rounded border">
-            <h4 className="font-medium text-gray-700 mb-2">
-              Passos do Algoritmo:
-            </h4>
-            <div className="max-h-40 overflow-y-auto space-y-1">
-              {resultado.passos.map((passo, index) => (
-                <div
-                  key={index}
-                  className="text-sm text-gray-600 p-2 bg-gray-50 rounded"
-                >
-                  <span className="font-mono text-xs text-gray-400 mr-2">
-                    {String(index + 1).padStart(2, '0')}:
-                  </span>
-                  {passo}
-                </div>
-              ))}
-            </div>
-          </div>
+        <div>
+          {isBFSResult(resultado) ? (
+            <ResultadoBFS resultado={resultado} />
+          ) : isDFSResult(resultado) ? (
+            <ResultadoDFS resultado={resultado} />
+          ) : isComponentesResult(resultado) ? (
+            <ResultadoComponentes resultado={resultado} />
+          ) : (
+            <ResultadoPrim resultado={resultado as PrimResult} />
+          )}
         </div>
       )}
     </div>

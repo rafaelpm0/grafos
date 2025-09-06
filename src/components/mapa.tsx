@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { GrafoData } from '../types/grafo';
+import type { Aresta, GrafoData } from '../types/grafo';
 import VerticeComponent from './VerticeComponent';
 import ArestaComponent from './ArestaComponent';
 import GerenciadorVertices from './GerenciadorVertices';
@@ -9,6 +9,7 @@ import { GRAFOS_OPCOES } from '../constants/grafos';
 function Mapa() {
   const [draggingVertice, setDraggingVertice] = useState<string | null>(null);
   const [grafoSelecionado, setGrafoSelecionado] = useState<string>('grafo1');
+  const [arestasSelecionadas, setArestasSelecionadas] = useState<Aresta[]>([]);
   const [algoritimoSelecionado, setAlgoritimoSelecionado] =
     useState<string>('nenhum');
 
@@ -73,9 +74,10 @@ function Mapa() {
               className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="nenhum">Selecione um algoritmo</option>
-              <option value="prim">Prim (MST)</option>
-              <option value="dijkstra">Dijkstra (em breve)</option>
-              <option value="kruskal">Kruskal (em breve)</option>
+              <option value="prim">Prim (AGM)</option>
+              <option value="bfs">Busca em Largura (BFS)</option>
+              <option value="dfs">Busca em Profundidade (DFS)</option>
+              <option value="componentes">Componentes Conexas</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -114,6 +116,7 @@ function Mapa() {
                 key={`${aresta.origem}-${aresta.destino}-${index}`}
                 aresta={aresta}
                 vertices={grafoData.vertices}
+                arestaColorida={arestasSelecionadas}
               />
             ))}
 
@@ -179,6 +182,7 @@ function Mapa() {
         {/* Resultado do Algoritmo */}
         <AlgoritmoResultado
           algoritmoSelecionado={algoritimoSelecionado}
+          setArestasSelecionadas={setArestasSelecionadas}
           grafoData={grafoData}
         />
       </div>
