@@ -57,23 +57,23 @@ function Mapa() {
       <div className="bg-white shadow-sm border-b border-gray-200 p-4 rounded-t-lg">
         <div className="w-full">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Controles de Algoritmo */}
+            {/* Seletor de Grafo */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <label htmlFor="algoritimo-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                  Algoritmo:
+                <label htmlFor="grafo-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                  Grafo:
                 </label>
                 <select
-                  id="algoritimo-select"
-                  value={algoritimoSelecionado}
-                  onChange={e => handleAlgoritmoChange(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+                  id="grafo-select"
+                  value={grafoSelecionado}
+                  onChange={e => handleGrafoChange(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
                 >
-                  <option value="nenhum">Selecione um algoritmo</option>
-                  <option value="prim">Prim (AGM)</option>
-                  <option value="bfs">Busca em Largura (BFS)</option>
-                  <option value="dfs">Busca em Profundidade (DFS)</option>
-                  <option value="componentes">Componentes Conexas</option>
+                  {GRAFOS_OPCOES.map(grafo => (
+                    <option key={grafo.id} value={grafo.id}>
+                      {grafo.nome}
+                    </option>
+                  ))}
                 </select>
               </div>
               
@@ -99,22 +99,22 @@ function Mapa() {
               </div>
             </div>
 
-            {/* Seletor de Grafo */}
+            {/* Controles de Algoritmo */}
             <div className="flex items-center gap-2">
-              <label htmlFor="grafo-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                Grafo:
+              <label htmlFor="algoritimo-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Algoritmo:
               </label>
               <select
-                id="grafo-select"
-                value={grafoSelecionado}
-                onChange={e => handleGrafoChange(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+                id="algoritimo-select"
+                value={algoritimoSelecionado}
+                onChange={e => handleAlgoritmoChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
               >
-                {GRAFOS_OPCOES.map(grafo => (
-                  <option key={grafo.id} value={grafo.id}>
-                    {grafo.nome}
-                  </option>
-                ))}
+                <option value="nenhum">Selecione um algoritmo</option>
+                <option value="prim">Prim (AGM)</option>
+                <option value="bfs">Busca em Largura (BFS)</option>
+                <option value="dfs">Busca em Profundidade (DFS)</option>
+                <option value="componentes">Componentes Conexas</option>
               </select>
             </div>
           </div>
