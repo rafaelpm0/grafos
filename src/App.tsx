@@ -5,10 +5,16 @@ import Mapa from './components/mapa'
 function App() {
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-    <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Grafos</h1>
-    <Mapa />
-    </main>
+    <div className="h-screen bg-gray-100 flex flex-col">
+      <header className="bg-white shadow-sm border-b border-gray-200 py-4 px-6">
+        <h1 className="text-3xl font-bold text-center text-gray-800">
+          Visualizador de Grafos
+        </h1>
+      </header>
+      <div className="flex-1 overflow-hidden">
+        <Mapa />
+      </div>
+    </div>
   )
 }
 

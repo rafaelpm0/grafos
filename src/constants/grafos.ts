@@ -5,6 +5,7 @@ export const GRAFOS_OPCOES = [
     id: 'grafo1',
     nome: 'Grafo Conexo Complexo',
     data: {
+      orientado: false,
       vertices: [
         { id: 'A', nome: 'A', x: 150, y: 100, conexoes: ['B', 'C', 'E'] },
         { id: 'B', nome: 'B', x: 300, y: 80, conexoes: ['A', 'C', 'D', 'F'] },
@@ -38,6 +39,7 @@ export const GRAFOS_OPCOES = [
     id: 'grafo2',
     nome: 'Grafo Desconexo (3 Componentes)',
     data: {
+      orientado: false,
       vertices: [
         // Componente 1: Triângulo
         { id: 'A', nome: 'A', x: 120, y: 100, conexoes: ['B', 'C'] },
@@ -79,6 +81,7 @@ export const GRAFOS_OPCOES = [
     id: 'grafo3',
     nome: 'Grafo Denso (Quase Completo)',
     data: {
+      orientado: false,
       vertices: [
         { id: 'A', nome: 'A', x: 200, y: 80, conexoes: ['B', 'C', 'D', 'E'] },
         { id: 'B', nome: 'B', x: 350, y: 120, conexoes: ['A', 'C', 'D', 'F'] },
@@ -107,6 +110,7 @@ export const GRAFOS_OPCOES = [
     id: 'grafo4',
     nome: 'Grafo Árvore (Sem Ciclos)',
     data: {
+      orientado: false,
       vertices: [
         // Raiz
         { id: 'Root', nome: 'Root', x: 300, y: 80, conexoes: ['A', 'B'] },
@@ -145,6 +149,7 @@ export const GRAFOS_OPCOES = [
     id: 'grafo5',
     nome: 'Grafo Grid 3x3',
     data: {
+      orientado: false,
       vertices: [
         // Linha superior
         { id: '1,1', nome: '1,1', x: 150, y: 100, conexoes: ['1,2', '2,1'] },
@@ -184,11 +189,59 @@ export const GRAFOS_OPCOES = [
     id: 'grafo6',
     nome: 'Grafo em Branco',
     data: {
+      orientado: false,
       vertices: [
 
       ],
       arestas: [
 
+      ]
+    } as GrafoData
+  },
+  {
+    id: 'grafo7',
+    nome: 'Dígrafo (Orientado) - Exemplo',
+    data: {
+      orientado: true,
+      vertices: [
+        { id: 'A', nome: 'A', x: 150, y: 100, conexoes: ['B', 'C'] },
+        { id: 'B', nome: 'B', x: 350, y: 100, conexoes: ['D'] },
+        { id: 'C', nome: 'C', x: 200, y: 200, conexoes: ['D', 'E'] },
+        { id: 'D', nome: 'D', x: 400, y: 200, conexoes: ['E'] },
+        { id: 'E', nome: 'E', x: 300, y: 300, conexoes: [] },
+      ],
+      arestas: [
+        { origem: 'A', destino: 'B', peso: 5 },
+        { origem: 'A', destino: 'C', peso: 3 },
+        { origem: 'B', destino: 'D', peso: 2 },
+        { origem: 'C', destino: 'D', peso: 4 },
+        { origem: 'C', destino: 'E', peso: 6 },
+        { origem: 'D', destino: 'E', peso: 1 },
+      ]
+    } as GrafoData
+  },
+  {
+    id: 'grafo8',
+    nome: 'Dígrafo Desconexo',
+    data: {
+      orientado: true,
+      vertices: [
+        // Componente 1
+        { id: 'A', nome: 'A', x: 120, y: 100, conexoes: ['B'] },
+        { id: 'B', nome: 'B', x: 220, y: 100, conexoes: ['C'] },
+        { id: 'C', nome: 'C', x: 170, y: 180, conexoes: [] },
+        
+        // Componente 2
+        { id: 'D', nome: 'D', x: 350, y: 100, conexoes: ['E'] },
+        { id: 'E', nome: 'E', x: 450, y: 100, conexoes: [] },
+        
+        // Componente 3 - Isolado
+        { id: 'F', nome: 'F', x: 300, y: 250, conexoes: [] },
+      ],
+      arestas: [
+        { origem: 'A', destino: 'B', peso: 2 },
+        { origem: 'B', destino: 'C', peso: 3 },
+        { origem: 'D', destino: 'E', peso: 1 },
       ]
     } as GrafoData
   }

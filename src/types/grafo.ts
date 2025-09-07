@@ -15,4 +15,5 @@ export interface Aresta {
 export interface GrafoData {
   vertices: Vertice[];
   arestas: Aresta[];
+  orientado: boolean; // Define se o grafo é orientado (direcionado) ou não
 }

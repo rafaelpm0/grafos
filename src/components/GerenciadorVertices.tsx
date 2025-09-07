@@ -48,6 +48,7 @@ function GerenciadorVertices({ grafoData, onGrafoUpdate }: GerenciadorVerticesPr
     }));
 
     const novoGrafo: GrafoData = {
+      ...grafoData,
       vertices: verticesAtualizados,
       arestas: novasArestas
     };
@@ -70,7 +71,8 @@ function GerenciadorVertices({ grafoData, onGrafoUpdate }: GerenciadorVerticesPr
       if (v.id === verticeSelecionado) {
         return { ...v, conexoes: [...v.conexoes, verticeDestino] };
       }
-      if (v.id === verticeDestino) {
+      // Para grafos não-orientados, adiciona conexão bidirecional
+      if (v.id === verticeDestino && !grafoData.orientado) {
         return { ...v, conexoes: [...v.conexoes, verticeSelecionado] };
       }
       return v;
@@ -84,6 +86,7 @@ function GerenciadorVertices({ grafoData, onGrafoUpdate }: GerenciadorVerticesPr
     };
 
     const novoGrafo: GrafoData = {
+      ...grafoData,
       vertices: verticesAtualizados,
       arestas: [...grafoData.arestas, novaAresta]
     };
@@ -105,13 +108,15 @@ function GerenciadorVertices({ grafoData, onGrafoUpdate }: GerenciadorVerticesPr
       if (v.id === origem) {
         return { ...v, conexoes: v.conexoes.filter(conexao => conexao !== destino) };
       }
-      if (v.id === destino) {
+      // Para grafos não-orientados, remove também a conexão bidirecional
+      if (v.id === destino && !grafoData.orientado) {
         return { ...v, conexoes: v.conexoes.filter(conexao => conexao !== origem) };
       }
       return v;
     });
 
     const novoGrafo: GrafoData = {
+      ...grafoData,
       vertices: verticesAtualizados,
       arestas: novasArestas
     };

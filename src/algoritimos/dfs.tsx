@@ -14,7 +14,7 @@ export function buscaEmProfundidade(
   grafo: GrafoData,
   inicio: string
 ): DFSResult {
-  const { vertices, arestas } = grafo;
+  const { vertices, arestas, orientado } = grafo;
 
   // Verifica se o vértice inicial existe
   const verticeInicial = vertices.find(v => v.id === inicio);
@@ -39,6 +39,7 @@ export function buscaEmProfundidade(
   const tempoFinalizacao: Record<string, number> = {};
   let tempo = 0;
   let pesoTotal = 0;
+  let pesoArvore = 0; // Peso apenas das arestas da árvore
 
   // Função auxiliar recursiva para DFS
   const dfsVisita = (verticeAtual: string) => {
@@ -54,42 +55,61 @@ export function buscaEmProfundidade(
 
     // Encontra o vértice atual no grafo
     const vertice = vertices.find(v => v.id === verticeAtual)!;
-    passos.push(
-      `Vizinhos de ${verticeAtual}: [${vertice.conexoes.join(', ')}]`
-    );
+    
+    // Para grafos orientados, considera apenas as conexões de saída
+    let vizinhos: string[] = [];
+    if (orientado) {
+      // Em grafos orientados, considera apenas as arestas que saem do vértice atual
+      vizinhos = arestas
+        .filter(a => a.origem === verticeAtual)
+        .map(a => a.destino);
+    } else {
+      // Em grafos não-orientados, usa as conexões bidirecionais
+      vizinhos = vertice.conexoes;
+    }
+    
+    passos.push(`Vizinhos de ${verticeAtual}: [${vizinhos.join(', ')}]`);
 
     // Explora todos os vizinhos do vértice atual
-    for (const vizinhoId of vertice.conexoes) {
+    for (const vizinhoId of vizinhos) {
       // Procura a aresta entre o vértice atual e o vizinho
-      const arestaEncontrada = arestas.find(
-        a =>
-          (a.origem === verticeAtual && a.destino === vizinhoId) ||
-          (a.origem === vizinhoId && a.destino === verticeAtual)
-      );
+      let arestaEncontrada: Aresta | undefined;
+      
+      if (orientado) {
+        // Em grafos orientados, procura apenas aresta que sai do vértice atual
+        arestaEncontrada = arestas.find(
+          a => a.origem === verticeAtual && a.destino === vizinhoId
+        );
+      } else {
+        // Em grafos não-orientados, procura aresta em qualquer direção
+        arestaEncontrada = arestas.find(
+          a =>
+            (a.origem === verticeAtual && a.destino === vizinhoId) ||
+            (a.origem === vizinhoId && a.destino === verticeAtual)
+        );
+      }
 
       if (arestaEncontrada) {
         // Simula a "descoberta" da aresta
         arestasTotais.push(arestaEncontrada);
         pesoTotal += arestaEncontrada.peso;
-        passos.push(
-          `Descoberta aresta: ${arestaEncontrada.origem} ↔ ${arestaEncontrada.destino} (peso: ${arestaEncontrada.peso})`
-        );
+        
+        const arestaTexto = orientado 
+          ? `${arestaEncontrada.origem} → ${arestaEncontrada.destino}`
+          : `${arestaEncontrada.origem} ↔ ${arestaEncontrada.destino}`;
+        
+        passos.push(`Descoberta aresta: ${arestaTexto} (peso: ${arestaEncontrada.peso})`);
 
         // Se o vizinho não foi visitado, faz chamada recursiva
         if (!visitados.has(vizinhoId)) {
           arvoreExpansao.push(arestaEncontrada);
-          passos.push(
-            `  → Vizinho ${vizinhoId} NÃO visitado - explorando recursivamente`
-          );
-          passos.push(
-            `  → Aresta ${arestaEncontrada.origem} ↔ ${arestaEncontrada.destino} adicionada à árvore`
-          );
+          pesoArvore += arestaEncontrada.peso; // Adiciona ao peso da árvore
+          passos.push(`  → Vizinho ${vizinhoId} NÃO visitado - explorando recursivamente`);
+          passos.push(`  → Aresta ${arestaTexto} adicionada à árvore`);
 
           dfsVisita(vizinhoId);
         } else {
-          passos.push(
-            `  → Vizinho ${vizinhoId} JÁ visitado - aresta de retorno`
-          );
+          passos.push(`  → Vizinho ${vizinhoId} JÁ visitado - aresta de retorno`);
         }
       }
     }
@@ -101,6 +121,7 @@ export function buscaEmProfundidade(
 
   // Inicializa a busca
   passos.push(`Iniciando busca em profundidade a partir do vértice: ${inicio}`);
+  passos.push(`Grafo: ${orientado ? 'Orientado (direcionado)' : 'Não-orientado'}`);
 
   dfsVisita(inicio);
 
@@ -110,10 +131,12 @@ export function buscaEmProfundidade(
   passos.push(`Total de arestas descobertas: ${arestasTotais.length}`);
   passos.push(`Arestas na árvore de busca: ${arvoreExpansao.length}`);
   passos.push(`Peso total das arestas descobertas: ${pesoTotal}`);
+  passos.push(`Peso total da árvore de busca: ${pesoArvore}`);
+  passos.push(`\n📌 DESTACADO NO GRAFO: Apenas as arestas da árvore de busca (${arvoreExpansao.length} arestas)`);
 
   return {
-    arestas: arestasTotais,
-    pesoTotal,
+    arestas: arvoreExpansao, // Retorna apenas as arestas da árvore de busca
+    pesoTotal: pesoArvore, // Retorna o peso apenas da árvore
     passos,
     ordemVisita,
     arvoreExpansao,

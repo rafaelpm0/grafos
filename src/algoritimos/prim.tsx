@@ -7,7 +7,7 @@ export interface PrimResult {
 }
 
 export function prim(grafo: GrafoData, inicio: string): PrimResult {
-  const { vertices, arestas } = grafo;
+  const { vertices, arestas, orientado } = grafo;
 
   // Verifica se o vértice inicial existe
   const verticeInicial = vertices.find(v => v.id === inicio);
@@ -16,6 +16,15 @@ export function prim(grafo: GrafoData, inicio: string): PrimResult {
       arestas: [],
       pesoTotal: 0,
       passos: ['Vértice inicial não encontrado'],
+    };
+  }
+
+  // Prim não se aplica a grafos orientados
+  if (orientado) {
+    return {
+      arestas: [],
+      pesoTotal: 0,
+      passos: ['O algoritmo de Prim não se aplica a grafos orientados. Use apenas com grafos não-orientados.'],
     };
   }
 

@@ -5,12 +5,14 @@ interface ArestaComponentProps {
   aresta: Aresta;
   vertices: Vertice[];
   arestaColorida: Aresta[];
+  orientado: boolean; // Nova propriedade para indicar se o grafo é orientado
 }
 
 const ArestaComponent: React.FC<ArestaComponentProps> = ({
   aresta,
   vertices,
   arestaColorida,
+  orientado,
 }) => {
   const origem = vertices.find(v => v.id === aresta.origem);
   const destino = vertices.find(v => v.id === aresta.destino);
@@ -28,6 +30,26 @@ const ArestaComponent: React.FC<ArestaComponentProps> = ({
   const midX = (origem.x + destino.x) / 2;
   const midY = (origem.y + destino.y) / 2;
 
+  // Calcula o ângulo da linha para posicionar a seta
+  const angle = Math.atan2(
+    destino.y - origem.y,
+    destino.x - origem.x
+  );
+
+  // Calcula a posição da seta (próximo ao vértice de destino, mas não sobrepondo)
+  const arrowDistance = 25; // Distância do centro do vértice (reduzida para vértices menores)
+  const arrowX = destino.x - Math.cos(angle) * arrowDistance;
+  const arrowY = destino.y - Math.sin(angle) * arrowDistance;
+
+  // Tamanho da seta (aumentado para melhor visibilidade)
+  const arrowSize = 15;
+
+  // Calcula os pontos da seta
+  const arrowPoint1X = arrowX - Math.cos(angle - Math.PI / 6) * arrowSize;
+  const arrowPoint1Y = arrowY - Math.sin(angle - Math.PI / 6) * arrowSize;
+  const arrowPoint2X = arrowX - Math.cos(angle + Math.PI / 6) * arrowSize;
+  const arrowPoint2Y = arrowY - Math.sin(angle + Math.PI / 6) * arrowSize;
+
   return (
     <g>
       <line
@@ -39,6 +61,18 @@ const ArestaComponent: React.FC<ArestaComponentProps> = ({
         strokeWidth={isHighlighted ? '4' : '2'}
         className="pointer-events-none"
       />
+
+      {/* Seta para grafos orientados */}
+      {orientado && (
+        <polygon
+          points={`${arrowX},${arrowY} ${arrowPoint1X},${arrowPoint1Y} ${arrowPoint2X},${arrowPoint2Y}`}
+          fill={isHighlighted ? '#f59e42' : '#64748b'}
+          stroke={isHighlighted ? '#f59e42' : '#64748b'}
+          strokeWidth="1"
+          className="pointer-events-none transition-all duration-300"
+        />
+      )}
+
       {/* Fundo branco para o texto do peso */}
       <circle
         cx={midX}

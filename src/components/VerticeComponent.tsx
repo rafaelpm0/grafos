@@ -18,15 +18,28 @@ const VerticeComponent: React.FC<VerticeComponentProps> = ({
 }) => {
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     onDragStart(vertice.id);
 
+    const svg = (e.target as HTMLElement).closest('svg');
+    if (!svg) return;
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const rect = (e.target as HTMLElement).closest('svg')?.getBoundingClientRect();
-      if (rect) {
-        const newX = moveEvent.clientX - rect.left;
-        const newY = moveEvent.clientY - rect.top;
-        onDrag(vertice.id, newX, newY);
-      }
+      const rect = svg.getBoundingClientRect();
+      const viewBox = svg.viewBox.baseVal;
+      
+      // Calcular posição relativa ao viewBox do SVG
+      const scaleX = viewBox.width / rect.width;
+      const scaleY = viewBox.height / rect.height;
+      
+      const newX = (moveEvent.clientX - rect.left) * scaleX + viewBox.x;
+      const newY = (moveEvent.clientY - rect.top) * scaleY + viewBox.y;
+      
+      // Limitar dentro dos bounds do viewBox
+      const boundedX = Math.max(20, Math.min(viewBox.width - 20, newX));
+      const boundedY = Math.max(20, Math.min(viewBox.height - 20, newY));
+      
+      onDrag(vertice.id, boundedX, boundedY);
     };
 
     const handleMouseUp = () => {
@@ -44,12 +57,13 @@ const VerticeComponent: React.FC<VerticeComponentProps> = ({
       <circle
         cx={vertice.x}
         cy={vertice.y}
-        r="30"
+        r="20"
         fill={isDragging ? "#3b82f6" : "#6366f1"}
         stroke="#1e40af"
         strokeWidth="2"
-        className="cursor-pointer hover:fill-blue-500 transition-colors"
+        className="cursor-grab hover:fill-blue-500 transition-colors active:cursor-grabbing"
         onMouseDown={handleMouseDown}
+        style={{ userSelect: 'none' }}
       />
       <text
         x={vertice.x}
@@ -57,9 +71,10 @@ const VerticeComponent: React.FC<VerticeComponentProps> = ({
         textAnchor="middle"
         dominantBaseline="central"
         fill="white"
-        fontSize="14"
+        fontSize="12"
         fontWeight="bold"
         className="pointer-events-none select-none"
+        style={{ userSelect: 'none' }}
       >
         {vertice.nome}
       </text>
