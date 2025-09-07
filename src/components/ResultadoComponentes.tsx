@@ -2,9 +2,10 @@ import type { ComponentesCaixas } from '../algoritimos/componentes';
 
 interface ResultadoComponentesProps {
   resultado: ComponentesCaixas;
+  grafoOrientado: boolean;
 }
 
-function ResultadoComponentes({ resultado }: ResultadoComponentesProps) {
+function ResultadoComponentes({ resultado, grafoOrientado }: ResultadoComponentesProps) {
   // Cores para diferenciar as componentes
   const coresComponentes = [
     'bg-blue-100 text-blue-800 border-blue-200',
@@ -19,17 +20,34 @@ function ResultadoComponentes({ resultado }: ResultadoComponentesProps) {
 
   return (
     <div className="space-y-4">
+      {/* Aviso para grafos não orientados */}
+      {!grafoOrientado && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="text-yellow-600 mr-3">⚠️</div>
+            <div>
+              <h4 className="text-yellow-800 font-medium">Aviso sobre Grafos Não-Orientados</h4>
+              <p className="text-yellow-700 text-sm mt-1">
+                O algoritmo de Tarjan é específico para <strong>grafos orientados</strong>. 
+                Para grafos não-orientados, o resultado mostra componentes conexas simples, 
+                não componentes fortemente conexas.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Resumo */}
       <div className="bg-white p-3 rounded border">
         <h4 className="font-medium text-gray-700 mb-2">
-          Resumo das Componentes Conexas:
+          Resumo das Componentes Fortemente Conexas:
         </h4>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <strong>Total de Componentes:</strong> {resultado.totalComponentes}
           </div>
           <div>
-            <strong>Status do Grafo:</strong>{' '}
+            <strong>Conectividade:</strong>{' '}
             <span
               className={`font-medium ${
                 resultado.totalComponentes === 1
@@ -37,7 +55,7 @@ function ResultadoComponentes({ resultado }: ResultadoComponentesProps) {
                   : 'text-orange-600'
               }`}
             >
-              {resultado.totalComponentes === 1 ? 'CONEXO' : 'DESCONEXO'}
+              {resultado.totalComponentes === 1 ? 'FORTEMENTE CONEXO' : 'NÃO FORTEMENTE CONEXO'}
             </span>
           </div>
         </div>
@@ -46,7 +64,7 @@ function ResultadoComponentes({ resultado }: ResultadoComponentesProps) {
       {/* Lista das Componentes */}
       <div className="bg-white p-3 rounded border">
         <h4 className="font-medium text-gray-700 mb-3">
-          Componentes Conexas Encontradas:
+          Componentes Fortemente Conexas Encontradas:
         </h4>
         <div className="space-y-3">
           {resultado.componentes.map((componente, index) => (
@@ -81,39 +99,9 @@ function ResultadoComponentes({ resultado }: ResultadoComponentesProps) {
         </div>
       </div>
 
-      {/* Análise Detalhada */}
-      <div className="bg-white p-3 rounded border">
-        <h4 className="font-medium text-gray-700 mb-2">Análise Detalhada:</h4>
-        <div className="space-y-2 text-sm text-gray-600">
-          {resultado.totalComponentes === 1 ? (
-            <div className="p-3 bg-green-50 rounded">
-              <strong className="text-green-800">Grafo Conexo:</strong> Existe
-              um caminho entre qualquer par de vértices.
-            </div>
-          ) : (
-            <div className="p-3 bg-orange-50 rounded">
-              <strong className="text-orange-800">Grafo Desconexo:</strong>{' '}
-              Existem vértices que não possuem caminho entre si.
-              <div className="mt-2">
-                <strong>Distribuição dos vértices:</strong>
-                <ul className="mt-1 ml-4 list-disc">
-                  {resultado.componentes.map((componente, index) => (
-                    <li key={index}>
-                      Componente {index + 1}: {componente.length} vértice
-                      {componente.length !== 1 ? 's' : ''} (
-                      {componente.join(', ')})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Passos do algoritmo */}
       <div className="bg-white p-3 rounded border">
-        <h4 className="font-medium text-gray-700 mb-2">Passos do Algoritmo:</h4>
+        <h4 className="font-medium text-gray-700 mb-2">Passos do Algoritmo de Tarjan:</h4>
         <div className="max-h-40 overflow-y-auto space-y-1">
           {resultado.passos.map((passo, index) => (
             <div

@@ -17,7 +17,7 @@ export function buscaEmLargura(grafo: GrafoData, inicio: string): BFResult {
     return {
       arestas: [],
       pesoTotal: 0,
-      passos: ['Vértice inicial não encontrado'],
+      passos: ['❌ Vértice inicial não encontrado'],
       ordemVisita: [],
       arvoreExpansao: [],
     };
@@ -30,20 +30,27 @@ export function buscaEmLargura(grafo: GrafoData, inicio: string): BFResult {
   const arvoreExpansao: Aresta[] = [];
   const arestasTotais: Aresta[] = [];
   let pesoTotal = 0;
-  let pesoArvore = 0; // Peso apenas das arestas da árvore
+  let pesoArvore = 0;
 
   // Inicializa a busca
   fila.push(inicio);
   visitados.add(inicio);
   ordemVisita.push(inicio);
-  passos.push(`Iniciando busca em largura a partir do vértice: ${inicio}`);
-  passos.push(`Grafo: ${orientado ? 'Orientado (direcionado)' : 'Não-orientado'}`);
-  passos.push(`Fila inicial: [${inicio}]`);
+  
+  passos.push('🔍 === BUSCA EM LARGURA (BFS) ===');
+  passos.push(`📍 Iniciando busca a partir do vértice: ${inicio}`);
+  passos.push(`📊 Tipo de grafo: ${orientado ? 'Orientado (direcionado)' : 'Não-orientado'}`);
+  passos.push(`🎯 Objetivo: Explorar todos os vértices alcançáveis`);
+  passos.push(`📋 Fila inicial: [${inicio}]`);
+  passos.push('');
 
+  let nivel = 0;
   while (fila.length > 0) {
     const verticeAtual = fila.shift()!;
-    passos.push(`\n--- Explorando vértice: ${verticeAtual} ---`);
-    passos.push(`Removido da fila: ${verticeAtual}`);
+    nivel++;
+
+    passos.push(`\n🔄 Nível ${nivel}: Explorando vértice ${verticeAtual}`);
+    passos.push(`📤 Removido da fila: ${verticeAtual}`);
 
     // Encontra o vértice atual no grafo
     const vertice = vertices.find(v => v.id === verticeAtual)!;
@@ -60,7 +67,11 @@ export function buscaEmLargura(grafo: GrafoData, inicio: string): BFResult {
       vizinhos = vertice.conexoes;
     }
     
-    passos.push(`Vizinhos de ${verticeAtual}: [${vizinhos.join(', ')}]`);
+    if (vizinhos.length > 0) {
+      passos.push(`👥 Vizinhos de ${verticeAtual}: [${vizinhos.join(', ')}]`);
+    } else {
+      passos.push(`👥 Vértice ${verticeAtual} não possui vizinhos alcançáveis`);
+    }
 
     // Explora todos os vizinhos do vértice atual
     for (const vizinhoId of vizinhos) {
@@ -90,7 +101,7 @@ export function buscaEmLargura(grafo: GrafoData, inicio: string): BFResult {
           ? `${arestaEncontrada.origem} → ${arestaEncontrada.destino}`
           : `${arestaEncontrada.origem} ↔ ${arestaEncontrada.destino}`;
         
-        passos.push(`Descoberta aresta: ${arestaTexto} (peso: ${arestaEncontrada.peso})`);
+        passos.push(`   🔗 Descoberta aresta: ${arestaTexto} (peso: ${arestaEncontrada.peso})`);
 
         // Se o vizinho não foi visitado, adiciona à árvore de expansão
         if (!visitados.has(vizinhoId)) {
@@ -98,28 +109,36 @@ export function buscaEmLargura(grafo: GrafoData, inicio: string): BFResult {
           fila.push(vizinhoId);
           ordemVisita.push(vizinhoId);
           arvoreExpansao.push(arestaEncontrada);
-          pesoArvore += arestaEncontrada.peso; // Adiciona ao peso da árvore
+          pesoArvore += arestaEncontrada.peso;
 
-          passos.push(`  → Vizinho ${vizinhoId} NÃO visitado - adicionado à fila`);
-          passos.push(`  → Aresta ${arestaTexto} adicionada à árvore`);
+          passos.push(`   ✅ Vizinho ${vizinhoId} NÃO visitado - adicionado à fila`);
+          passos.push(`   🌳 Aresta ${arestaTexto} adicionada à árvore de expansão`);
         } else {
-          passos.push(`  → Vizinho ${vizinhoId} JÁ visitado - ignorado`);
+          passos.push(`   ⚠️  Vizinho ${vizinhoId} JÁ visitado - aresta ignorada`);
         }
       }
     }
 
-    passos.push(`Fila atual: [${fila.join(', ')}]`);
-    passos.push(`Visitados: {${Array.from(visitados).join(', ')}}`);
+    passos.push(`📋 Fila atual: [${fila.join(', ')}]`);
+    passos.push(`✅ Visitados: {${Array.from(visitados).join(', ')}}`);
   }
 
-  passos.push(`\n=== BUSCA CONCLUÍDA ===`);
-  passos.push(`Ordem de visita: ${ordemVisita.join(' → ')}`);
-  passos.push(`Total de vértices visitados: ${visitados.size}`);
-  passos.push(`Total de arestas descobertas: ${arestasTotais.length}`);
-  passos.push(`Arestas na árvore de expansão: ${arvoreExpansao.length}`);
-  passos.push(`Peso total das arestas descobertas: ${pesoTotal}`);
-  passos.push(`Peso total da árvore de expansão: ${pesoArvore}`);
-  passos.push(`\n📌 DESTACADO NO GRAFO: Apenas as arestas da árvore de expansão (${arvoreExpansao.length} arestas)`);
+  passos.push('\n🎉 === BUSCA CONCLUÍDA ===');
+  passos.push(`🔄 Ordem de visita: ${ordemVisita.join(' → ')}`);
+  passos.push(`📊 Total de vértices visitados: ${visitados.size}/${vertices.length}`);
+  passos.push(`🔗 Total de arestas descobertas: ${arestasTotais.length}`);
+  passos.push(`🌳 Arestas na árvore de expansão: ${arvoreExpansao.length}`);
+  passos.push(`💰 Peso total das arestas descobertas: ${pesoTotal}`);
+  passos.push(`🌲 Peso total da árvore de expansão: ${pesoArvore}`);
+  
+  if (visitados.size === vertices.length) {
+    passos.push(`✅ Todos os vértices foram alcançados - grafo conexo`);
+  } else {
+    const naoVisitados = vertices.filter(v => !visitados.has(v.id)).map(v => v.id);
+    passos.push(`⚠️  Vértices não alcançados: {${naoVisitados.join(', ')}} - grafo desconexo`);
+  }
+  
+  passos.push(`\n📌 DESTACADO NO GRAFO: Árvore de expansão BFS (${arvoreExpansao.length} arestas)`);
 
   return {
     arestas: arvoreExpansao, // Retorna apenas as arestas da árvore de expansão

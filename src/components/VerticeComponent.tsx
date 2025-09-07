@@ -7,6 +7,7 @@ interface VerticeComponentProps {
   isDragging: boolean;
   onDragStart: (id: string) => void;
   onDragEnd: () => void;
+  cor?: string; // Cor opcional para coloração específica (ex: Tarjan)
 }
 
 const VerticeComponent: React.FC<VerticeComponentProps> = ({
@@ -14,7 +15,8 @@ const VerticeComponent: React.FC<VerticeComponentProps> = ({
   onDrag,
   isDragging,
   onDragStart,
-  onDragEnd
+  onDragEnd,
+  cor
 }) => {
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -58,7 +60,7 @@ const VerticeComponent: React.FC<VerticeComponentProps> = ({
         cx={vertice.x}
         cy={vertice.y}
         r="20"
-        fill={isDragging ? "#3b82f6" : "#6366f1"}
+        fill={cor || (isDragging ? "#3b82f6" : "#6366f1")}
         stroke="#1e40af"
         strokeWidth="2"
         className="cursor-grab hover:fill-blue-500 transition-colors active:cursor-grabbing"

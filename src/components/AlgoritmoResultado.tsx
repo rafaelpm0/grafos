@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { GrafoData, Aresta } from '../types/grafo';
+import type { VerticeColorido } from '../algoritimos/componentes';
 import { prim, type PrimResult } from '../algoritimos/prim';
 import { buscaEmLargura, type BFResult } from '../algoritimos/bf';
 import { buscaEmProfundidade, type DFSResult } from '../algoritimos/dfs';
@@ -16,11 +17,13 @@ interface AlgoritmoResultadoProps {
   algoritmoSelecionado: string;
   grafoData: GrafoData;
   setArestasSelecionadas: (arestas: Aresta[]) => void;
+  setVerticesColoridos: (vertices: VerticeColorido[]) => void;
 }
 
 function AlgoritmoResultado({
   algoritmoSelecionado,
   setArestasSelecionadas,
+  setVerticesColoridos,
   grafoData,
 }: AlgoritmoResultadoProps) {
   const [verticeInicial, setVerticeInicial] = useState<string>('');
@@ -57,6 +60,12 @@ function AlgoritmoResultado({
       case 'componentes': {
         const resultadoComponentes = encontrarComponentesConexas(grafoData);
         setArestasSelecionadas([]);
+        // Se houver vértices coloridos (resultado do Tarjan), aplicá-los
+        if (resultadoComponentes.verticesColoridos) {
+          setVerticesColoridos(resultadoComponentes.verticesColoridos);
+        } else {
+          setVerticesColoridos([]);
+        }
         console.log('Resultado Componentes:', resultadoComponentes);
         setResultado(resultadoComponentes);
         break;
@@ -69,6 +78,7 @@ function AlgoritmoResultado({
   const resetarResultado = () => {
     setResultado(null);
     setVerticeInicial('');
+    setVerticesColoridos([]); // Reset cores dos vértices
   };
 
   // Funções auxiliares para verificar tipos
@@ -121,7 +131,7 @@ function AlgoritmoResultado({
       case 'dfs':
         return 'BUSCA EM PROFUNDIDADE (DFS)';
       case 'componentes':
-        return 'COMPONENTES CONEXAS';
+        return 'TARJAN (SCC)';
       case 'prim':
         return 'PRIM (AGM)';
       default:
@@ -198,7 +208,7 @@ function AlgoritmoResultado({
           ) : isDFSResult(resultado) ? (
             <ResultadoDFS resultado={resultado} />
           ) : isComponentesResult(resultado) ? (
-            <ResultadoComponentes resultado={resultado} />
+            <ResultadoComponentes resultado={resultado} grafoOrientado={grafoData.orientado} />
           ) : (
             <ResultadoPrim resultado={resultado as PrimResult} />
           )}

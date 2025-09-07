@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Aresta, GrafoData } from '../types/grafo';
+import type { VerticeColorido } from '../algoritimos/componentes';
 import VerticeComponent from './VerticeComponent';
 import ArestaComponent from './ArestaComponent';
 import GerenciadorVertices from './GerenciadorVertices';
@@ -12,6 +13,7 @@ function Mapa() {
   const [arestasSelecionadas, setArestasSelecionadas] = useState<Aresta[]>([]);
   const [algoritimoSelecionado, setAlgoritimoSelecionado] =
     useState<string>('nenhum');
+  const [verticesColoridos, setVerticesColoridos] = useState<VerticeColorido[]>([]);
 
   // Dados do grafo baseado na seleção
   const [grafoData, setGrafoData] = useState<GrafoData>(GRAFOS_OPCOES[0].data);
@@ -22,12 +24,14 @@ function Mapa() {
     if (novoGrafo) {
       setGrafoData(novoGrafo.data);
       setArestasSelecionadas([]); // Reset arestas selecionadas
+      setVerticesColoridos([]); // Reset cores dos vértices
     }
   };
 
   const handleAlgoritmoChange = (novoAlgoritmo: string) => {
     setAlgoritimoSelecionado(novoAlgoritmo);
     setArestasSelecionadas([]); // Reset arestas selecionadas quando trocar algoritmo
+    setVerticesColoridos([]); // Reset cores dos vértices quando trocar algoritmo
   };
 
   const handleGrafoUpdate = (novoGrafo: GrafoData) => {
@@ -114,7 +118,7 @@ function Mapa() {
                 <option value="prim">Prim (AGM)</option>
                 <option value="bfs">Busca em Largura (BFS)</option>
                 <option value="dfs">Busca em Profundidade (DFS)</option>
-                <option value="componentes">Componentes Conexas</option>
+                <option value="componentes">Tarjan (SCC)</option>
               </select>
             </div>
           </div>
@@ -158,16 +162,21 @@ function Mapa() {
                 ))}
 
                 {/* Renderizar vértices */}
-                {grafoData.vertices.map(vertice => (
-                  <VerticeComponent
-                    key={vertice.id}
-                    vertice={vertice}
-                    onDrag={handleVerticePosition}
-                    isDragging={draggingVertice === vertice.id}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                  />
-                ))}
+                {grafoData.vertices.map(vertice => {
+                  // Buscar cor do vértice se existir nos vértices coloridos
+                  const verticeColorido = verticesColoridos.find(v => v.id === vertice.id);
+                  return (
+                    <VerticeComponent
+                      key={vertice.id}
+                      vertice={vertice}
+                      onDrag={handleVerticePosition}
+                      isDragging={draggingVertice === vertice.id}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      cor={verticeColorido?.cor}
+                    />
+                  );
+                })}
               </svg>
             </div>
           </div>
@@ -204,6 +213,7 @@ function Mapa() {
               <AlgoritmoResultado
                 algoritmoSelecionado={algoritimoSelecionado}
                 setArestasSelecionadas={setArestasSelecionadas}
+                setVerticesColoridos={setVerticesColoridos}
                 grafoData={grafoData}
               />
             ) : (
