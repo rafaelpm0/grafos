@@ -8,10 +8,16 @@ import {
   encontrarComponentesConexas,
   type ComponentesCaixas,
 } from '../algoritimos/componentes';
+import { welshPowell, type ColoracaoResult } from '../algoritimos/welshPowell';
+import { aStar, type AStarResult } from '../algoritimos/aStar';
+import { hopcroftTarjanNaoOrientado, type PontesArticulacoesResult } from '../algoritimos/hopcroftTarjan';
 import ResultadoPrim from './ResultadoPrim';
 import ResultadoBFS from './ResultadoBFS';
 import ResultadoDFS from './ResultadoDFS';
 import ResultadoComponentes from './ResultadoComponentes';
+import ResultadoWelshPowell from './ResultadoWelshPowell';
+import ResultadoAStar from './ResultadoAStar';
+import ResultadoHopcroftTarjan from './ResultadoHopcroftTarjan';
 
 interface AlgoritmoResultadoProps {
   algoritmoSelecionado: string;
@@ -27,9 +33,12 @@ function AlgoritmoResultado({
   grafoData,
 }: AlgoritmoResultadoProps) {
   const [verticeInicial, setVerticeInicial] = useState<string>('');
+  const [verticeFinal, setVerticeFinal] = useState<string>('');
   const [resultado, setResultado] = useState<
-    PrimResult | BFResult | DFSResult | ComponentesCaixas | null
+    PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | null
   >(null);
+
+
 
   const executarAlgoritmo = () => {
     switch (algoritmoSelecionado) {
@@ -70,6 +79,47 @@ function AlgoritmoResultado({
         setResultado(resultadoComponentes);
         break;
       }
+      case 'welshPowell': {
+        const resultadoColoracao = welshPowell(grafoData);
+        setArestasSelecionadas([]);
+        // Aplicar cores dos vértices
+        if (resultadoColoracao.verticesColoridos) {
+          setVerticesColoridos(resultadoColoracao.verticesColoridos);
+        } else {
+          setVerticesColoridos([]);
+        }
+        console.log('Resultado Welsh-Powell:', resultadoColoracao);
+        setResultado(resultadoColoracao);
+        break;
+      }
+      case 'astar': {
+        if (!verticeInicial.trim() || !verticeFinal.trim()) return;
+        const resultadoAStar = aStar(grafoData, verticeInicial, verticeFinal);
+        // Aplicar arestas do caminho encontrado
+        setArestasSelecionadas(resultadoAStar.arestas);
+        // Aplicar cores dos vértices
+        if (resultadoAStar.verticesColoridos) {
+          setVerticesColoridos(resultadoAStar.verticesColoridos);
+        } else {
+          setVerticesColoridos([]);
+        }
+        console.log('Resultado A*:', resultadoAStar);
+        setResultado(resultadoAStar);
+        break;
+      }
+      case 'hopcroftTarjan': {
+        const resultadoHopcroftTarjan = hopcroftTarjanNaoOrientado(grafoData);
+        setArestasSelecionadas([]);
+        // Aplicar cores dos vértices (vermelho=articulação, verde=normal)
+        if (resultadoHopcroftTarjan.verticesColoridos) {
+          setVerticesColoridos(resultadoHopcroftTarjan.verticesColoridos);
+        } else {
+          setVerticesColoridos([]);
+        }
+        console.log('Resultado Hopcroft-Tarjan:', resultadoHopcroftTarjan);
+        setResultado(resultadoHopcroftTarjan);
+        break;
+      }
       default:
         console.log('Algoritmo não implementado ainda');
     }
@@ -78,12 +128,14 @@ function AlgoritmoResultado({
   const resetarResultado = () => {
     setResultado(null);
     setVerticeInicial('');
+    setVerticeFinal('');
+    setArestasSelecionadas([]); // Reset arestas selecionadas
     setVerticesColoridos([]); // Reset cores dos vértices
   };
 
   // Funções auxiliares para verificar tipos
   const isBFSResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
   ): result is BFResult => {
     return (
       'ordemVisita' in result &&
@@ -93,15 +145,33 @@ function AlgoritmoResultado({
   };
 
   const isDFSResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
   ): result is DFSResult => {
     return 'tempoDescoberta' in result && 'tempoFinalizacao' in result;
   };
 
   const isComponentesResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
   ): result is ComponentesCaixas => {
     return 'componentes' in result && 'totalComponentes' in result;
+  };
+
+  const isColoracaoResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+  ): result is ColoracaoResult => {
+    return 'cores' in result && 'totalCores' in result && 'ordem' in result;
+  };
+
+  const isAStarResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+  ): result is AStarResult => {
+    return 'caminho' in result && 'heuristica' in result && 'fScores' in result;
+  };
+
+  const isHopcroftTarjanResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+  ): result is PontesArticulacoesResult => {
+    return 'pontes' in result && 'verticesArticulacao' in result && 'low' in result;
   };
 
   if (algoritmoSelecionado === 'nenhum') {
@@ -113,6 +183,9 @@ function AlgoritmoResultado({
     if (isBFSResult(resultado)) return 'bg-blue-50';
     if (isDFSResult(resultado)) return 'bg-green-50';
     if (isComponentesResult(resultado)) return 'bg-orange-50';
+    if (isColoracaoResult(resultado)) return 'bg-pink-50';
+    if (isAStarResult(resultado)) return 'bg-yellow-50';
+    if (isHopcroftTarjanResult(resultado)) return 'bg-red-50';
     return 'bg-purple-50'; // Prim
   };
 
@@ -121,6 +194,9 @@ function AlgoritmoResultado({
     if (isBFSResult(resultado)) return 'bg-blue-500';
     if (isDFSResult(resultado)) return 'bg-green-500';
     if (isComponentesResult(resultado)) return 'bg-orange-500';
+    if (isColoracaoResult(resultado)) return 'bg-pink-500';
+    if (isAStarResult(resultado)) return 'bg-yellow-500';
+    if (isHopcroftTarjanResult(resultado)) return 'bg-red-500';
     return 'bg-purple-500'; // Prim
   };
 
@@ -134,6 +210,12 @@ function AlgoritmoResultado({
         return 'TARJAN (SCC)';
       case 'prim':
         return 'PRIM (AGM)';
+      case 'welshPowell':
+        return 'WELSH-POWELL (COLORAÇÃO)';
+      case 'astar':
+        return 'A* (BUSCA HEURÍSTICA)';
+      case 'hopcroftTarjan':
+        return 'HOPCROFT-TARJAN (PONTES E ARTICULAÇÕES)';
       default:
         return algoritmoSelecionado.toUpperCase();
     }
@@ -149,7 +231,7 @@ function AlgoritmoResultado({
       {/* Controles do algoritmo */}
       <div className="mb-4">
         <div className="flex gap-2 items-end">
-          {algoritmoSelecionado !== 'componentes' && (
+          {algoritmoSelecionado !== 'componentes' && algoritmoSelecionado !== 'welshPowell' && algoritmoSelecionado !== 'hopcroftTarjan' && (
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Vértice inicial:
@@ -162,6 +244,8 @@ function AlgoritmoResultado({
                     ? 'focus:ring-blue-500 focus:border-blue-500'
                     : algoritmoSelecionado === 'dfs'
                     ? 'focus:ring-green-500 focus:border-green-500'
+                    : algoritmoSelecionado === 'astar'
+                    ? 'focus:ring-yellow-500 focus:border-yellow-500'
                     : 'focus:ring-purple-500 focus:border-purple-500'
                 }`}
               >
@@ -174,9 +258,31 @@ function AlgoritmoResultado({
               </select>
             </div>
           )}
+          {algoritmoSelecionado === 'astar' && (
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Vértice destino:
+              </label>
+              <select
+                value={verticeFinal}
+                onChange={e => setVerticeFinal(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+              >
+                <option value="">Selecione um vértice</option>
+                {grafoData.vertices.map(vertice => (
+                  <option key={vertice.id} value={vertice.id}>
+                    {vertice.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <button
             onClick={executarAlgoritmo}
-            disabled={algoritmoSelecionado !== 'componentes' && !verticeInicial}
+            disabled={
+              (algoritmoSelecionado !== 'componentes' && algoritmoSelecionado !== 'welshPowell' && algoritmoSelecionado !== 'hopcroftTarjan' && !verticeInicial) ||
+              (algoritmoSelecionado === 'astar' && (!verticeInicial || !verticeFinal))
+            }
             className={`px-4 py-2 text-white rounded-md text-sm focus:outline-none focus:ring-2 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors ${
               algoritmoSelecionado === 'bfs'
                 ? 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500'
@@ -184,6 +290,12 @@ function AlgoritmoResultado({
                 ? 'bg-green-500 hover:bg-green-600 focus:ring-green-500'
                 : algoritmoSelecionado === 'componentes'
                 ? 'bg-orange-500 hover:bg-orange-600 focus:ring-orange-500'
+                : algoritmoSelecionado === 'welshPowell'
+                ? 'bg-pink-500 hover:bg-pink-600 focus:ring-pink-500'
+                : algoritmoSelecionado === 'astar'
+                ? 'bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-500'
+                : algoritmoSelecionado === 'hopcroftTarjan'
+                ? 'bg-red-500 hover:bg-red-600 focus:ring-red-500'
                 : 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-500'
             }`}
           >
@@ -209,6 +321,12 @@ function AlgoritmoResultado({
             <ResultadoDFS resultado={resultado} />
           ) : isComponentesResult(resultado) ? (
             <ResultadoComponentes resultado={resultado} grafoOrientado={grafoData.orientado} />
+          ) : isColoracaoResult(resultado) ? (
+            <ResultadoWelshPowell resultado={resultado} />
+          ) : isAStarResult(resultado) ? (
+            <ResultadoAStar resultado={resultado} />
+          ) : isHopcroftTarjanResult(resultado) ? (
+            <ResultadoHopcroftTarjan resultado={resultado} />
           ) : (
             <ResultadoPrim resultado={resultado as PrimResult} />
           )}

@@ -119,6 +119,9 @@ function Mapa() {
                 <option value="bfs">Busca em Largura (BFS)</option>
                 <option value="dfs">Busca em Profundidade (DFS)</option>
                 <option value="componentes">Tarjan (SCC)</option>
+                <option value="welshPowell">Welsh-Powell (Coloração)</option>
+                <option value="astar">A* (Busca Heurística)</option>
+                <option value="hopcroftTarjan">Hopcroft-Tarjan (Pontes e Articulações)</option>
               </select>
             </div>
           </div>
@@ -174,6 +177,7 @@ function Mapa() {
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                       cor={verticeColorido?.cor}
+                      verticesColoridos={verticesColoridos}
                     />
                   );
                 })}

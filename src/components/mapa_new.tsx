@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Aresta, GrafoData } from '../types/grafo';
+import type { VerticeColorido } from '../algoritimos/componentes';
 import VerticeComponent from './VerticeComponent';
 import ArestaComponent from './ArestaComponent';
 import GerenciadorVertices from './GerenciadorVertices';
@@ -10,6 +11,7 @@ function Mapa() {
   const [draggingVertice, setDraggingVertice] = useState<string | null>(null);
   const [grafoSelecionado, setGrafoSelecionado] = useState<string>('grafo1');
   const [arestasSelecionadas, setArestasSelecionadas] = useState<Aresta[]>([]);
+  const [verticesColoridos, setVerticesColoridos] = useState<VerticeColorido[]>([]);
   const [algoritimoSelecionado, setAlgoritimoSelecionado] =
     useState<string>('nenhum');
 
@@ -67,6 +69,9 @@ function Mapa() {
                 <option value="bfs">Busca em Largura (BFS)</option>
                 <option value="dfs">Busca em Profundidade (DFS)</option>
                 <option value="componentes">Componentes Conexas</option>
+                <option value="welshPowell">Welsh-Powell (Coloração)</option>
+                <option value="astar">A* (Busca Heurística)</option>
+                <option value="hopcroftTarjan">Hopcroft-Tarjan (Pontes e Articulações)</option>
               </select>
             </div>
             
@@ -156,6 +161,7 @@ function Mapa() {
                     isDragging={draggingVertice === vertice.id}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
+                    verticesColoridos={verticesColoridos}
                   />
                 ))}
               </svg>
@@ -193,6 +199,7 @@ function Mapa() {
             <AlgoritmoResultado
               algoritmoSelecionado={algoritimoSelecionado}
               setArestasSelecionadas={setArestasSelecionadas}
+              setVerticesColoridos={setVerticesColoridos}
               grafoData={grafoData}
             />
           </div>

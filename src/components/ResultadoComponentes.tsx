@@ -22,82 +22,85 @@ function ResultadoComponentes({ resultado, grafoOrientado }: ResultadoComponente
     <div className="space-y-4">
       {/* Aviso para grafos não orientados */}
       {!grafoOrientado && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="text-yellow-600 mr-3">⚠️</div>
-            <div>
-              <h4 className="text-yellow-800 font-medium">Aviso sobre Grafos Não-Orientados</h4>
-              <p className="text-yellow-700 text-sm mt-1">
-                O algoritmo de Tarjan é específico para <strong>grafos orientados</strong>. 
-                Para grafos não-orientados, o resultado mostra componentes conexas simples, 
-                não componentes fortemente conexas.
-              </p>
-            </div>
-          </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <div className="text-red-800 font-medium">Tarjan não se aplica</div>
+          <div className="text-red-700 text-sm">Requer grafo orientado</div>
         </div>
       )}
 
       {/* Resumo */}
       <div className="bg-white p-3 rounded border">
         <h4 className="font-medium text-gray-700 mb-2">
-          Resumo das Componentes Fortemente Conexas:
+          {grafoOrientado 
+            ? 'Resumo das Componentes Fortemente Conexas:'
+            : 'Resultado do Algoritmo de Tarjan:'
+          }
         </h4>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <strong>Total de Componentes:</strong> {resultado.totalComponentes}
-          </div>
-          <div>
-            <strong>Conectividade:</strong>{' '}
-            <span
-              className={`font-medium ${
-                resultado.totalComponentes === 1
-                  ? 'text-green-600'
-                  : 'text-orange-600'
-              }`}
-            >
-              {resultado.totalComponentes === 1 ? 'FORTEMENTE CONEXO' : 'NÃO FORTEMENTE CONEXO'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Lista das Componentes */}
-      <div className="bg-white p-3 rounded border">
-        <h4 className="font-medium text-gray-700 mb-3">
-          Componentes Fortemente Conexas Encontradas:
-        </h4>
-        <div className="space-y-3">
-          {resultado.componentes.map((componente, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <span className="text-sm font-medium text-gray-600">
-                  Componente {index + 1}:
-                </span>
-              </div>
-              <div
-                className={`flex-1 p-3 rounded border-2 ${
-                  coresComponentes[index % coresComponentes.length]
+        {grafoOrientado ? (
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <strong>Total de Componentes:</strong> {resultado.totalComponentes}
+            </div>
+            <div>
+              <strong>Conectividade:</strong>{' '}
+              <span
+                className={`font-medium ${
+                  resultado.totalComponentes === 1
+                    ? 'text-green-600'
+                    : 'text-orange-600'
                 }`}
               >
-                <div className="flex flex-wrap gap-2">
-                  {componente.map((vertice, vIndex) => (
-                    <span
-                      key={vIndex}
-                      className="px-2 py-1 bg-white bg-opacity-70 rounded text-sm font-medium"
-                    >
-                      {vertice}
-                    </span>
-                  ))}
+                {resultado.totalComponentes === 1 ? 'FORTEMENTE CONEXO' : 'NÃO FORTEMENTE CONEXO'}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center p-3">
+            <div className="text-red-600 font-medium">Não aplicável</div>
+            <div className="text-red-700 text-sm">Grafo deve ser orientado</div>
+          </div>
+        )}
+      </div>
+
+      {/* Lista das Componentes - só mostra se há componentes */}
+      {resultado.componentes.length > 0 && (
+        <div className="bg-white p-3 rounded border">
+          <h4 className="font-medium text-gray-700 mb-3">
+            Componentes Fortemente Conexas Encontradas:
+          </h4>
+          <div className="space-y-3">
+            {resultado.componentes.map((componente, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <span className="text-sm font-medium text-gray-600">
+                    Componente {index + 1}:
+                  </span>
                 </div>
-                <div className="mt-2 text-xs opacity-75">
-                  {componente.length} vértice
-                  {componente.length !== 1 ? 's' : ''}
+                <div
+                  className={`flex-1 p-3 rounded border-2 ${
+                    coresComponentes[index % coresComponentes.length]
+                  }`}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {componente.map((vertice, vIndex) => (
+                      <span
+                        key={vIndex}
+                        className="px-2 py-1 bg-white bg-opacity-70 rounded text-sm font-medium"
+                      >
+                        {vertice}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-2 text-xs opacity-75">
+                    {componente.length} vértice
+                    {componente.length !== 1 ? 's' : ''}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Passos do algoritmo */}
       <div className="bg-white p-3 rounded border">
