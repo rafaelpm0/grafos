@@ -10,7 +10,7 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
   return (
     <div className="space-y-4">
       {/* Resumo do Resultado */}
-      <div className="border rounded-lg p-4 bg-red-50 border-red-200">
+      {/* <div className="border rounded-lg p-4 bg-red-50 border-red-200">
         <div className="flex items-center mb-3">
           <span className="text-2xl mr-2">🔍</span>
           <h4 className="font-semibold text-red-800">
@@ -37,10 +37,10 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
           <div><strong>Pontes:</strong> Arestas cuja remoção desconecta o grafo</div>
           <div><strong>Articulações:</strong> Vértices cuja remoção desconecta o grafo</div>
         </div>
-      </div>
+      </div> */}
 
       {/* Pontes Encontradas */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+      {/* <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
         <h4 className="font-semibold text-orange-800 mb-3 flex items-center">
           <span className="text-xl mr-2">⚡</span>
           Pontes (Arestas Críticas)
@@ -76,10 +76,10 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
             </div>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Vértices de Articulação */}
-      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+      {/* <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
         <h4 className="font-semibold text-purple-800 mb-3 flex items-center">
           <span className="text-xl mr-2">🔗</span>
           Vértices de Articulação (Pontos Críticos)
@@ -115,10 +115,10 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
             </div>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Tempos de Descoberta e Low */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
           <span className="text-xl mr-2">🕐</span>
           Tempos de Descoberta e Low Values
@@ -169,7 +169,7 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
           <div><strong>Tempo de Descoberta:</strong> Ordem em que os vértices foram visitados no DFS</div>
           <div><strong>Low Value:</strong> Menor tempo de descoberta alcançável a partir do vértice</div>
         </div>
-      </div>
+      </div> */}
 
       {/* Análise de Planaridade */}
       <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
@@ -224,7 +224,7 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
       </div>
 
       {/* Análise de Conectividade */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+      {/* <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-semibold text-green-800 mb-3 flex items-center">
           <span className="text-xl mr-2">📈</span>
           Análise de Conectividade
@@ -274,7 +274,7 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* Passos do Algoritmo */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">

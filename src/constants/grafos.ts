@@ -401,18 +401,41 @@ export const GRAFOS_OPCOES = [
     data: {
       orientado: false,
       vertices: [
-        { id: 'Maringa', nome: 'Maringá', x: 200, y: 50, conexoes: ['Londrina', 'Umuarama', 'PontaGrossa'] },
-        { id: 'Londrina', nome: 'Londrina', x: 300, y: 50, conexoes: ['Maringa', 'PontaGrossa'] },
-        { id: 'Umuarama', nome: 'Umuarama', x: 100, y: 50, conexoes: ['Maringa', 'Toledo'] },
-        { id: 'PontaGrossa', nome: 'Ponta Grossa', x: 350, y: 150, conexoes: ['Londrina', 'Curitiba', 'Maringa', 'Guarapuava'] },
-        { id: 'Curitiba', nome: 'Curitiba', x: 400, y: 200, conexoes: ['PontaGrossa', 'Paranagua', 'SaoMateus'] },
-        { id: 'Paranagua', nome: 'Paranaguá', x: 450, y: 250, conexoes: ['Curitiba'] },
-        { id: 'Guarapuava', nome: 'Guarapuava', x: 250, y: 150, conexoes: ['Maringa', 'PontaGrossa', 'Cascavel'] },
-        { id: 'SaoMateus', nome: 'São Mateus do Sul', x: 350, y: 250, conexoes: ['Curitiba', 'FranciscoBeltrao'] },
-        { id: 'Cascavel', nome: 'Cascavel', x: 100, y: 150, conexoes: ['Toledo', 'Guarapuava', 'Foz'] },
-        { id: 'Toledo', nome: 'Toledo', x: 50, y: 100, conexoes: ['Cascavel', 'Umuarama'] },
-        { id: 'Foz', nome: 'Foz do Iguaçu', x: 0, y: 150, conexoes: ['Cascavel'] },
-        { id: 'FranciscoBeltrao', nome: 'Francisco Beltrão', x: 50, y: 200, conexoes: ['Cascavel', 'SaoMateus'] },
+        // Cascavel como referência (destino) - mantém posição central
+        { id: 'Cascavel', nome: 'Cascavel', x: 200, y: 200, conexoes: ['Toledo', 'Guarapuava', 'Foz', 'FranciscoBeltrao'] },
+        
+        // Toledo: h = 39 = |180-200| + |181-200| = 20 + 19 = 39
+        { id: 'Toledo', nome: 'Toledo', x: 180, y: 181, conexoes: ['Cascavel', 'Umuarama'] },
+        
+        // Foz do Iguaçu: h = 131 = |100-200| + |169-200| = 100 + 31 = 131
+        { id: 'Foz', nome: 'Foz do Iguaçu', x: 100, y: 169, conexoes: ['Cascavel'] },
+        
+        // Francisco Beltrão: h = 132 = |120-200| + |252-200| = 80 + 52 = 132
+        { id: 'FranciscoBeltrao', nome: 'Francisco Beltrão', x: 120, y: 252, conexoes: ['Cascavel', 'SaoMateus'] },
+        
+        // Umuarama: h = 133 = |150-200| + |117-200| = 50 + 83 = 133
+        { id: 'Umuarama', nome: 'Umuarama', x: 150, y: 117, conexoes: ['Maringa', 'Toledo'] },
+        
+        // Guarapuava: h = 207 = |307-200| + |100-200| = 107 + 100 = 207
+        { id: 'Guarapuava', nome: 'Guarapuava', x: 307, y: 100, conexoes: ['Maringa', 'PontaGrossa', 'Cascavel'] },
+        
+        // Maringá: h = 229 = |329-200| + |100-200| = 129 + 100 = 229
+        { id: 'Maringa', nome: 'Maringá', x: 329, y: 100, conexoes: ['Londrina', 'Umuarama', 'PontaGrossa'] },
+        
+        // Londrina: h = 296 = |396-200| + |100-200| = 196 + 100 = 296
+        { id: 'Londrina', nome: 'Londrina', x: 396, y: 100, conexoes: ['Maringa', 'PontaGrossa'] },
+        
+        // São Mateus do Sul: h = 325 = |375-200| + |350-200| = 175 + 150 = 325
+        { id: 'SaoMateus', nome: 'São Mateus do Sul', x: 375, y: 350, conexoes: ['Curitiba', 'FranciscoBeltrao'] },
+        
+        // Ponta Grossa: h = 332 = |432-200| + |100-200| = 232 + 100 = 332
+        { id: 'PontaGrossa', nome: 'Ponta Grossa', x: 432, y: 100, conexoes: ['Londrina', 'Curitiba', 'Maringa', 'Guarapuava'] },
+        
+        // Curitiba: h = 424 = |500-200| + |324-200| = 300 + 124 = 424
+        { id: 'Curitiba', nome: 'Curitiba', x: 500, y: 324, conexoes: ['PontaGrossa', 'Paranagua', 'SaoMateus'] },
+        
+        // Paranaguá: h = 501 = |601-200| + |300-200| = 401 + 100 = 501
+        { id: 'Paranagua', nome: 'Paranaguá', x: 601, y: 300, conexoes: ['Curitiba'] },
       ],
       arestas: [
         { origem: 'Maringa', destino: 'Londrina', peso: 114 },
@@ -427,9 +450,8 @@ export const GRAFOS_OPCOES = [
         { origem: 'Cascavel', destino: 'Toledo', peso: 50 },
         { origem: 'Cascavel', destino: 'Foz', peso: 143 },
         { origem: 'FranciscoBeltrao', destino: 'Cascavel', peso: 186 },
-        {origem: 'Toledo', destino: 'Umuarama', peso: 126},
+        { origem: 'Toledo', destino: 'Umuarama', peso: 126 },
         { origem: 'FranciscoBeltrao', destino: 'SaoMateus', peso: 354 },
-
       ]
     } as GrafoData
   },
