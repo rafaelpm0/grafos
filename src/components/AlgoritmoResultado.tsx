@@ -11,6 +11,8 @@ import {
 import { welshPowell, type ColoracaoResult } from '../algoritimos/welshPowell';
 import { aStar, type AStarResult } from '../algoritimos/aStar';
 import { hopcroftTarjanNaoOrientado, type PontesArticulacoesResult } from '../algoritimos/hopcroftTarjan';
+import { verificarPlanaridade, type PlanaridadeResult } from '../algoritimos/planaridade';
+import ResultadoPlanaridade from './ResultadoPlanaridade';
 import ResultadoPrim from './ResultadoPrim';
 import ResultadoBFS from './ResultadoBFS';
 import ResultadoDFS from './ResultadoDFS';
@@ -35,7 +37,7 @@ function AlgoritmoResultado({
   const [verticeInicial, setVerticeInicial] = useState<string>('');
   const [verticeFinal, setVerticeFinal] = useState<string>('');
   const [resultado, setResultado] = useState<
-    PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | null
+    PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | null
   >(null);
 
 
@@ -120,6 +122,18 @@ function AlgoritmoResultado({
         setResultado(resultadoHopcroftTarjan);
         break;
       }
+      case 'planaridade': {
+        const resultadoPlanaridade = verificarPlanaridade(grafoData);
+        setArestasSelecionadas([]);
+        if (resultadoPlanaridade.verticesColoridos) {
+          setVerticesColoridos(resultadoPlanaridade.verticesColoridos);
+        } else {
+          setVerticesColoridos([]);
+        }
+        console.log('Resultado Planaridade:', resultadoPlanaridade);
+        setResultado(resultadoPlanaridade);
+        break;
+      }
       default:
         console.log('Algoritmo não implementado ainda');
     }
@@ -135,7 +149,7 @@ function AlgoritmoResultado({
 
   // Funções auxiliares para verificar tipos
   const isBFSResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
   ): result is BFResult => {
     return (
       'ordemVisita' in result &&
@@ -145,33 +159,39 @@ function AlgoritmoResultado({
   };
 
   const isDFSResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
   ): result is DFSResult => {
     return 'tempoDescoberta' in result && 'tempoFinalizacao' in result;
   };
 
   const isComponentesResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
   ): result is ComponentesCaixas => {
     return 'componentes' in result && 'totalComponentes' in result;
   };
 
   const isColoracaoResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
   ): result is ColoracaoResult => {
     return 'cores' in result && 'totalCores' in result && 'ordem' in result;
   };
 
   const isAStarResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
   ): result is AStarResult => {
     return 'caminho' in result && 'heuristica' in result && 'fScores' in result;
   };
 
   const isHopcroftTarjanResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
   ): result is PontesArticulacoesResult => {
     return 'pontes' in result && 'verticesArticulacao' in result && 'low' in result;
+  };
+
+  const isPlanaridadeResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+  ): result is PlanaridadeResult => {
+    return 'ePlanar' in result && 'criterioEuler' in result && 'subgrafosProibidos' in result;
   };
 
   if (algoritmoSelecionado === 'nenhum') {
@@ -186,6 +206,7 @@ function AlgoritmoResultado({
     if (isColoracaoResult(resultado)) return 'bg-pink-50';
     if (isAStarResult(resultado)) return 'bg-yellow-50';
     if (isHopcroftTarjanResult(resultado)) return 'bg-red-50';
+    if (isPlanaridadeResult(resultado)) return 'bg-cyan-50';
     return 'bg-purple-50'; // Prim
   };
 
@@ -197,6 +218,7 @@ function AlgoritmoResultado({
     if (isColoracaoResult(resultado)) return 'bg-pink-500';
     if (isAStarResult(resultado)) return 'bg-yellow-500';
     if (isHopcroftTarjanResult(resultado)) return 'bg-red-500';
+    if (isPlanaridadeResult(resultado)) return 'bg-cyan-500';
     return 'bg-purple-500'; // Prim
   };
 
@@ -216,6 +238,8 @@ function AlgoritmoResultado({
         return 'A* (BUSCA HEURÍSTICA)';
       case 'hopcroftTarjan':
         return 'HOPCROFT-TARJAN (PONTES E ARTICULAÇÕES)';
+      case 'planaridade':
+        return 'VERIFICAÇÃO DE PLANARIDADE';
       default:
         return algoritmoSelecionado.toUpperCase();
     }
@@ -231,7 +255,7 @@ function AlgoritmoResultado({
       {/* Controles do algoritmo */}
       <div className="mb-4">
         <div className="flex gap-2 items-end">
-          {algoritmoSelecionado !== 'componentes' && algoritmoSelecionado !== 'welshPowell' && algoritmoSelecionado !== 'hopcroftTarjan' && (
+          {algoritmoSelecionado !== 'componentes' && algoritmoSelecionado !== 'welshPowell' && algoritmoSelecionado !== 'hopcroftTarjan' && algoritmoSelecionado !== 'planaridade' && (
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Vértice inicial:
@@ -280,7 +304,7 @@ function AlgoritmoResultado({
           <button
             onClick={executarAlgoritmo}
             disabled={
-              (algoritmoSelecionado !== 'componentes' && algoritmoSelecionado !== 'welshPowell' && algoritmoSelecionado !== 'hopcroftTarjan' && !verticeInicial) ||
+              (algoritmoSelecionado !== 'componentes' && algoritmoSelecionado !== 'welshPowell' && algoritmoSelecionado !== 'hopcroftTarjan' && algoritmoSelecionado !== 'planaridade' && !verticeInicial) ||
               (algoritmoSelecionado === 'astar' && (!verticeInicial || !verticeFinal))
             }
             className={`px-4 py-2 text-white rounded-md text-sm focus:outline-none focus:ring-2 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors ${
@@ -327,6 +351,8 @@ function AlgoritmoResultado({
             <ResultadoAStar resultado={resultado} />
           ) : isHopcroftTarjanResult(resultado) ? (
             <ResultadoHopcroftTarjan resultado={resultado} />
+          ) : isPlanaridadeResult(resultado) ? (
+            <ResultadoPlanaridade resultado={resultado} />
           ) : (
             <ResultadoPrim resultado={resultado as PrimResult} />
           )}

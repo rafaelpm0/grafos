@@ -171,6 +171,58 @@ function ResultadoHopcroftTarjan({ resultado }: ResultadoHopcroftTarjanProps) {
         </div>
       </div>
 
+      {/* Análise de Planaridade */}
+      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+        <h4 className="font-semibold text-indigo-800 mb-3 flex items-center">
+          <span className="text-xl mr-2">🎯</span>
+          Análise de Planaridade
+        </h4>
+        
+        <div className="space-y-3">
+          <div className={`p-3 rounded ${resultado.ePlanar ? 'bg-green-100' : 'bg-red-100'}`}>
+            <div className="flex items-center">
+              <span className="text-xl mr-2">{resultado.ePlanar ? '✅' : '❌'}</span>
+              <div>
+                <div className={`font-medium ${resultado.ePlanar ? 'text-green-800' : 'text-red-800'}`}>
+                  O grafo {resultado.ePlanar ? 'É' : 'NÃO é'} planar
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-indigo-100 p-3 rounded">
+            <h5 className="font-semibold text-indigo-800 mb-2">Critério de Euler:</h5>
+            <div className="text-sm space-y-1">
+              <div><strong>Vértices (V):</strong> {resultado.criterioEuler.vertices}</div>
+              <div><strong>Arestas (E):</strong> {resultado.criterioEuler.arestas}</div>
+              <div><strong>Faces (F):</strong> {resultado.criterioEuler.faces}</div>
+              <div><strong>Fórmula:</strong> {resultado.criterioEuler.formula}</div>
+              <div className={`mt-2 font-medium ${resultado.criterioEuler.valido ? 'text-green-700' : 'text-red-700'}`}>
+                {resultado.criterioEuler.valido ? '✅ Satisfaz' : '❌ Não satisfaz'} o critério de Euler
+              </div>
+            </div>
+          </div>
+
+          {(!resultado.ePlanar && resultado.subgrafosProibidos.k5) && (
+            <div className="bg-red-100 p-3 rounded">
+              <div className="font-medium text-red-800 mb-1">❌ Contém K₅ (subgrafo proibido)</div>
+              <div className="text-sm text-red-600">
+                O grafo contém um subgrafo completo com 5 vértices (K₅)
+              </div>
+            </div>
+          )}
+
+          {(!resultado.ePlanar && resultado.subgrafosProibidos.k33) && (
+            <div className="bg-red-100 p-3 rounded">
+              <div className="font-medium text-red-800 mb-1">❌ Contém K₃,₃ (subgrafo proibido)</div>
+              <div className="text-sm text-red-600">
+                O grafo contém um subgrafo bipartido completo 3,3 (K₃,₃)
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Análise de Conectividade */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-semibold text-green-800 mb-3 flex items-center">

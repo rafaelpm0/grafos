@@ -122,6 +122,7 @@ function Mapa() {
                 <option value="welshPowell">Welsh-Powell (Coloração)</option>
                 <option value="astar">A* (Busca Heurística)</option>
                 <option value="hopcroftTarjan">Hopcroft-Tarjan (Pontes e Articulações)</option>
+                <option value="planaridade">Verificação de Planaridade</option>
               </select>
             </div>
           </div>
