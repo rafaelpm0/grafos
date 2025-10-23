@@ -24,23 +24,78 @@ export interface PontesArticulacoesResult {
   grauVertices: { [id: string]: number };
 }
 
-// Funções auxiliares para verificação de planaridade
 function verificarK5(vertices: Vertice[], arestas: Aresta[], passos: string[]): boolean {
-  passos.push('🔍 Verificando presença de K₅ (grafo completo com 5 vértices)...');
-  
+
+  passos.push('🔍 Verificando presença de K₅ (subgrafo ou subdivisão)...');
+
   if (vertices.length < 5) {
     passos.push('   ✅ Menos de 5 vértices - K₅ impossível');
     return false;
   }
 
-  for (let i = 0; i < vertices.length - 4; i++) {
-    for (let j = i + 1; j < vertices.length - 3; j++) {
-      for (let k = j + 1; k < vertices.length - 2; k++) {
-        for (let l = k + 1; l < vertices.length - 1; l++) {
-          for (let m = l + 1; m < vertices.length; m++) {
-            const conjunto = [vertices[i], vertices[j], vertices[k], vertices[l], vertices[m]];
-            if (ehCompleto(conjunto, arestas)) {
-              passos.push(`   ❌ K₅ encontrado: {${conjunto.map(v => v.nome).join(', ')}}`);
+  const buildAdj = () => {
+    const adj = new Map<string, Set<string>>();
+    vertices.forEach(v => adj.set(v.id, new Set(v.conexoes)));
+    arestas.forEach(a => {
+      if (!adj.has(a.origem)) adj.set(a.origem, new Set());
+      if (!adj.has(a.destino)) adj.set(a.destino, new Set());
+      adj.get(a.origem)!.add(a.destino);
+      adj.get(a.destino)!.add(a.origem);
+    });
+    return adj;
+  };
+
+  const ids = vertices.map(v => v.id);
+
+  for (let i = 0; i < ids.length - 4; i++) {
+    for (let j = i + 1; j < ids.length - 3; j++) {
+      for (let k = j + 1; k < ids.length - 2; k++) {
+        for (let l = k + 1; l < ids.length - 1; l++) {
+          for (let m = l + 1; m < ids.length; m++) {
+            const candidato = [ids[i], ids[j], ids[k], ids[l], ids[m]];
+
+            const adj = buildAdj();
+
+            const contrair = (x: string) => {
+              const viz = Array.from(adj.get(x) || []);
+              if (viz.length !== 2) return false;
+              const [a, b] = viz;
+              // conectar a <-> b
+              adj.get(a)!.add(b);
+              adj.get(b)!.add(a);
+              // remover x das vizinhanças
+              adj.get(a)!.delete(x);
+              adj.get(b)!.delete(x);
+              adj.delete(x);
+              return true;
+            };
+
+            let mudou = true;
+            while (mudou) {
+              mudou = false;
+              for (const [vid, neigh] of Array.from(adj.entries())) {
+                if (candidato.includes(vid)) continue; 
+                if (neigh.size === 2) {
+                  contrair(vid);
+                  mudou = true;
+                }
+              }
+            }
+
+            let todosConectados = true;
+            for (let p = 0; p < 5 && todosConectados; p++) {
+              for (let q = p + 1; q < 5; q++) {
+                const a = candidato[p];
+                const b = candidato[q];
+                if (!adj.has(a) || !adj.get(a)!.has(b)) {
+                  todosConectados = false;
+                  break;
+                }
+              }
+            }
+
+            if (todosConectados) {
+              passos.push(`   ❌ K₅ (ou subdivisão) encontrado entre: {${candidato.join(', ')}}`);
               return true;
             }
           }
@@ -48,8 +103,8 @@ function verificarK5(vertices: Vertice[], arestas: Aresta[], passos: string[]): 
       }
     }
   }
-  
-  passos.push('   ✅ K₅ não encontrado');
+
+  passos.push('   ✅ K₅ não encontrado (como subgrafo ou subdivisão detectável)');
   return false;
 }
 
@@ -86,24 +141,6 @@ function verificarK33(vertices: Vertice[], arestas: Aresta[], passos: string[]):
   
   passos.push('   ✅ K₃,₃ não encontrado');
   return false;
-}
-
-function ehCompleto(vertices: Vertice[], arestas: Aresta[]): boolean {
-  const n = vertices.length;
-  const arestasEsperadas = (n * (n - 1)) / 2;
-  
-  let arestasEncontradas = 0;
-  for (let i = 0; i < n - 1; i++) {
-    for (let j = i + 1; j < n; j++) {
-      const existe = arestas.some(a => 
-        (a.origem === vertices[i].id && a.destino === vertices[j].id) ||
-        (a.origem === vertices[j].id && a.destino === vertices[i].id)
-      );
-      if (existe) arestasEncontradas++;
-    }
-  }
-  
-  return arestasEncontradas === arestasEsperadas;
 }
 
 function ehBipartidoCompleto(grupo1: Vertice[], grupo2: Vertice[], arestas: Aresta[]): boolean {
@@ -155,7 +192,6 @@ export function hopcroftTarjanNaoOrientado(
   const verticesArticulacao: Set<string> = new Set();
   let tempo = 0;
 
-  // Primeiro verificamos a planaridade
   passos.push('🎯 === VERIFICAÇÃO DE PLANARIDADE ===');
   
   // Calcular grau dos vértices
@@ -167,7 +203,6 @@ export function hopcroftTarjanNaoOrientado(
   const v = vertices.length;
   const e = arestas.length;
 
-  // Verificar critério de Euler
   const limiteEuler = 3 * v - 6;
   const passaEuler = v <= 4 || e <= limiteEuler;
   
@@ -183,7 +218,6 @@ export function hopcroftTarjanNaoOrientado(
   let temK5 = false;
   let temK33 = false;
 
-  // Se passar no critério de Euler, verificar subgrafos proibidos
   if (passaEuler && v > 4) {
     passos.push('\n🔍 Verificando subgrafos proibidos...');
     temK5 = verificarK5(vertices, arestas, passos);
@@ -195,7 +229,6 @@ export function hopcroftTarjanNaoOrientado(
 
   passos.push(`\n${ePlanar ? '✅' : '❌'} Resultado: O grafo ${ePlanar ? 'É' : 'NÃO é'} planar`);
   
-  // Agora procedemos com Hopcroft-Tarjan
   passos.push('\n🎯 === HOPCROFT-TARJAN (NÃO ORIENTADO) ===');
   passos.push('📋 Algoritmo para encontrar pontes e vértices de articulação');
   passos.push('🔍 Ponte: aresta cuja remoção desconecta o grafo');
@@ -215,7 +248,6 @@ export function hopcroftTarjanNaoOrientado(
     const vertice = vertices.find(v => v.id === u);
     if (!vertice) return;
 
-    // Explorar todos os vizinhos
     for (const v of vertice.conexoes) {
       const aresta = arestas.find(
         a =>
@@ -229,21 +261,18 @@ export function hopcroftTarjanNaoOrientado(
         passos.push(`  → Explorando vizinho ${v} (pai: ${u})`);
         dfs(v);
 
-        // Atualizar low[u] com base no low[v]
         const lowAnterior = low[u];
         low[u] = Math.min(low[u], low[v]);
         if (lowAnterior !== low[u]) {
           passos.push(`  📊 Atualizando low[${u}] = min(${lowAnterior}, ${low[v]}) = ${low[u]}`);
         }
 
-        // Verificar se é uma ponte
         if (low[v] > tempoDescoberta[u] && aresta) {
           pontes.push(aresta);
           passos.push(`    ⚡ PONTE ENCONTRADA: ${u} ↔ ${v}`);
           passos.push(`       📈 Condição: low[${v}] (${low[v]}) > tempo[${u}] (${tempoDescoberta[u]})`);
         }
 
-        // Verificar se é um vértice de articulação
         const isRaizComMuitosFilhos = pai[u] === null && filhos > 1;
         const isNaoRaizComCondicao = pai[u] !== null && low[v] >= tempoDescoberta[u];
         
@@ -257,7 +286,6 @@ export function hopcroftTarjanNaoOrientado(
         }
 
       } else if (v !== pai[u]) {
-        // Aresta de retorno (back edge)
         const lowAnterior = low[u];
         low[u] = Math.min(low[u], tempoDescoberta[v]);
         if (lowAnterior !== low[u]) {
@@ -268,7 +296,6 @@ export function hopcroftTarjanNaoOrientado(
     }
   }
 
-  // Executar DFS para cada componente conexa
   for (const v of vertices) {
     if (!visitados.has(v.id)) {
       pai[v.id] = null;
@@ -277,9 +304,7 @@ export function hopcroftTarjanNaoOrientado(
     }
   }
 
-  // Cores serão definidas mais abaixo
 
-  // Resumo final
   passos.push('\n🎉 === RESULTADO FINAL ===');
   passos.push(`📊 Total de vértices: ${vertices.length}`);
   passos.push(`📊 Total de arestas: ${arestas.length}`);
@@ -304,7 +329,6 @@ export function hopcroftTarjanNaoOrientado(
     passos.push(`🔗 Nenhum vértice de articulação - grafo é 2-vértice-conexo`);
   }
 
-  // Análise de conectividade
   passos.push('\n📈 === ANÁLISE DE CONECTIVIDADE ===');
   if (pontes.length === 0 && verticesArticulacao.size === 0) {
     passos.push('✅ Grafo é 2-conexo (resistente a falhas)');
@@ -314,7 +338,6 @@ export function hopcroftTarjanNaoOrientado(
     passos.push('⚠️ Grafo possui articulações - remoção pode desconectar');
   }
 
-  // Estatísticas dos tempos
   passos.push('\n🕐 === TEMPOS DE DESCOBERTA E LOW ===');
   vertices.forEach(vertice => {
     const descoberta = tempoDescoberta[vertice.id] || 0;
@@ -323,9 +346,6 @@ export function hopcroftTarjanNaoOrientado(
     passos.push(`${nomeVertice}: tempo=${descoberta}, low=${lowValue}`);
   });
 
-  // Os vértices já foram coloridos anteriormente, não precisa fazer novamente
-
-  // Colorir arestas que são pontes
   const verticesComPontes = new Set<string>();
   pontes.forEach(ponte => {
     verticesComPontes.add(ponte.origem);
