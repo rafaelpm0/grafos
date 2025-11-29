@@ -456,12 +456,112 @@ export const GRAFOS_OPCOES = [
     } as GrafoData
   },
   {
+  id: 'pvc',
+  nome: 'PCV - Problema do Caixeiro Viajante',
+  data: {
+    orientado: false,
+    vertices: [
+      { id: 'F', nome: 'F', x: 80,  y: 250, conexoes: ['N','C','L'] },
+      { id: 'N', nome: 'N', x: 150, y: 120, conexoes: ['F','C','K'] },
+      { id: 'C', nome: 'C', x: 180, y: 200, conexoes: ['N','F','K','E','H','L'] },
+      { id: 'K', nome: 'K', x: 260, y: 140, conexoes: ['N','C','E','G'] },
+      { id: 'E', nome: 'E', x: 330, y: 200, conexoes: ['K','C','H','G'] },
+      { id: 'H', nome: 'H', x: 320, y: 300, conexoes: ['E','C','L','G'] },
+      { id: 'L', nome: 'L', x: 180, y: 320, conexoes: ['F','C','H'] },
+      { id: 'G', nome: 'G', x: 420, y: 180, conexoes: ['K','E','H'] },
+    ],
+
+    arestas: [
+      // F
+      { origem: 'F', destino: 'N', peso: 30 },
+      { origem: 'F', destino: 'C', peso: 20 },
+      { origem: 'F', destino: 'L', peso: 10 },
+
+      // N
+      { origem: 'N', destino: 'C', peso: 47 },
+      { origem: 'N', destino: 'K', peso: 60 },
+
+      // C
+      { origem: 'C', destino: 'K', peso: 70 },
+      { origem: 'C', destino: 'E', peso: 10 },
+      { origem: 'C', destino: 'H', peso: 30 },
+      { origem: 'C', destino: 'L', peso: 10 },
+
+      // K
+      { origem: 'K', destino: 'E', peso: 73 },
+      { origem: 'K', destino: 'G', peso: 90 },
+      { origem: 'K', destino: 'C', peso: 70 }, // (duplicado acima, mas essencial p/ não orientado)
+
+      // E
+      { origem: 'E', destino: 'H', peso: 60 },
+      { origem: 'E', destino: 'G', peso: 40 },
+
+      // H
+      { origem: 'H', destino: 'L', peso: 40 },
+      { origem: 'H', destino: 'G', peso: 80 },
+      { origem: 'H', destino: 'C', peso: 30 },
+      { origem: 'H', destino: 'E', peso: 60 },
+
+      // L
+      { origem: 'L', destino: 'H', peso: 40 },
+      { origem: 'L', destino: 'C', peso: 10 },
+      { origem: 'L', destino: 'F', peso: 10 },
+      { origem: 'L', destino: 'H', peso: 55 }, // a aresta inferior reta da imagem
+
+      // G
+      { origem: 'G', destino: 'E', peso: 40 },
+      { origem: 'G', destino: 'H', peso: 80 },
+      { origem: 'G', destino: 'K', peso: 90 },
+    ]
+  }
+},
+
+  {
     id: 'vazio',
     nome: '📝 Grafo em Branco (Para Desenhar)',
     data: {
       orientado: false,
       vertices: [],
       arestas: []
+    } as GrafoData
+  },
+  {
+    id: 'pcv',
+    nome: '🚗 PCV - Cidades Brasileiras (Caixeiro Viajante)',
+    data: {
+      orientado: false,
+      vertices: [
+        { id: 'F', nome: 'Fortaleza', x: 400, y: 80, conexoes: ['R', 'S', 'B'] },
+        { id: 'R', nome: 'Recife', x: 480, y: 120, conexoes: ['F', 'S', 'B'] },
+        { id: 'S', nome: 'Salvador', x: 450, y: 180, conexoes: ['F', 'R', 'B', 'RJ'] },
+        { id: 'B', nome: 'Brasília', x: 320, y: 150, conexoes: ['F', 'R', 'S', 'BH', 'G'] },
+        { id: 'BH', nome: 'Belo Horizonte', x: 380, y: 220, conexoes: ['B', 'RJ', 'SP', 'G'] },
+        { id: 'RJ', nome: 'Rio de Janeiro', x: 450, y: 260, conexoes: ['S', 'BH', 'SP'] },
+        { id: 'SP', nome: 'São Paulo', x: 350, y: 280, conexoes: ['BH', 'RJ', 'C', 'G'] },
+        { id: 'C', nome: 'Curitiba', x: 310, y: 340, conexoes: ['SP', 'PA', 'G'] },
+        { id: 'PA', nome: 'Porto Alegre', x: 280, y: 400, conexoes: ['C'] },
+        { id: 'G', nome: 'Goiânia', x: 250, y: 200, conexoes: ['B', 'BH', 'SP', 'C'] },
+      ],
+      arestas: [
+        { origem: 'F', destino: 'R', peso: 800 },
+        { origem: 'F', destino: 'S', peso: 1400 },
+        { origem: 'F', destino: 'B', peso: 2200 },
+        { origem: 'R', destino: 'S', peso: 840 },
+        { origem: 'R', destino: 'B', peso: 2130 },
+        { origem: 'S', destino: 'B', peso: 1450 },
+        { origem: 'S', destino: 'RJ', peso: 1650 },
+        { origem: 'B', destino: 'BH', peso: 740 },
+        { origem: 'B', destino: 'G', peso: 210 },
+        { origem: 'BH', destino: 'RJ', peso: 440 },
+        { origem: 'BH', destino: 'SP', peso: 580 },
+        { origem: 'BH', destino: 'G', peso: 900 },
+        { origem: 'RJ', destino: 'SP', peso: 430 },
+        { origem: 'SP', destino: 'C', peso: 410 },
+        { origem: 'SP', destino: 'G', peso: 920 },
+        { origem: 'C', destino: 'PA', peso: 710 },
+        { origem: 'C', destino: 'G', peso: 1140 },
+        { origem: 'G', destino: 'SP', peso: 920 },
+      ]
     } as GrafoData
   }
 ];

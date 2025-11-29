@@ -4,6 +4,7 @@ import type { VerticeColorido } from '../algoritimos/componentes';
 import { prim, type PrimResult } from '../algoritimos/prim';
 import { buscaEmLargura, type BFResult } from '../algoritimos/bf';
 import { buscaEmProfundidade, type DFSResult } from '../algoritimos/dfs';
+import { algoritmoGeneticoPCV, type AGResult, type ConfigAG } from '../algoritimos/algoritmoGenetico';
 import {
   encontrarComponentesConexas,
   type ComponentesCaixas,
@@ -20,6 +21,7 @@ import ResultadoComponentes from './ResultadoComponentes';
 import ResultadoWelshPowell from './ResultadoWelshPowell';
 import ResultadoAStar from './ResultadoAStar';
 import ResultadoHopcroftTarjan from './ResultadoHopcroftTarjan';
+import ResultadoAG from './ResultadoAG';
 
 interface AlgoritmoResultadoProps {
   algoritmoSelecionado: string;
@@ -37,8 +39,16 @@ function AlgoritmoResultado({
   const [verticeInicial, setVerticeInicial] = useState<string>('');
   const [verticeFinal, setVerticeFinal] = useState<string>('');
   const [resultado, setResultado] = useState<
-    PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | null
+    PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult | null
   >(null);
+  const [configAG, setConfigAG] = useState<ConfigAG>({
+    tamanhoPopulacao: 100,
+    taxaCruzamento: 0.7,
+    taxaMutacao: 0.01,
+    numeroGeracoes: 50,
+    elitismo: 5,
+    pontosCruzamento: [2, 5]
+  });
 
 
 
@@ -134,6 +144,19 @@ function AlgoritmoResultado({
         setResultado(resultadoPlanaridade);
         break;
       }
+      case 'ag': {
+        if (!verticeInicial.trim()) return;
+        const resultadoAG = algoritmoGeneticoPCV(grafoData, verticeInicial, configAG);
+        setArestasSelecionadas(resultadoAG.arestas);
+        if (resultadoAG.verticesColoridos) {
+          setVerticesColoridos(resultadoAG.verticesColoridos);
+        } else {
+          setVerticesColoridos([]);
+        }
+        console.log('Resultado AG:', resultadoAG);
+        setResultado(resultadoAG);
+        break;
+      }
       default:
         console.log('Algoritmo não implementado ainda');
     }
@@ -149,7 +172,7 @@ function AlgoritmoResultado({
 
   // Funções auxiliares para verificar tipos
   const isBFSResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
   ): result is BFResult => {
     return (
       'ordemVisita' in result &&
@@ -159,39 +182,45 @@ function AlgoritmoResultado({
   };
 
   const isDFSResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
   ): result is DFSResult => {
     return 'tempoDescoberta' in result && 'tempoFinalizacao' in result;
   };
 
   const isComponentesResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
   ): result is ComponentesCaixas => {
     return 'componentes' in result && 'totalComponentes' in result;
   };
 
   const isColoracaoResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
   ): result is ColoracaoResult => {
     return 'cores' in result && 'totalCores' in result && 'ordem' in result;
   };
 
   const isAStarResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
   ): result is AStarResult => {
     return 'caminho' in result && 'heuristica' in result && 'fScores' in result;
   };
 
   const isHopcroftTarjanResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
   ): result is PontesArticulacoesResult => {
     return 'pontes' in result && 'verticesArticulacao' in result && 'low' in result;
   };
 
   const isPlanaridadeResult = (
-    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
   ): result is PlanaridadeResult => {
     return 'ePlanar' in result && 'criterioEuler' in result && 'subgrafosProibidos' in result;
+  };
+
+  const isAGResult = (
+    result: PrimResult | BFResult | DFSResult | ComponentesCaixas | ColoracaoResult | AStarResult | PontesArticulacoesResult | PlanaridadeResult | AGResult
+  ): result is AGResult => {
+    return 'melhorRota' in result && 'custoMelhorRota' in result && 'historicoGeracao' in result;
   };
 
   if (algoritmoSelecionado === 'nenhum') {
@@ -207,6 +236,7 @@ function AlgoritmoResultado({
     if (isAStarResult(resultado)) return 'bg-yellow-50';
     if (isHopcroftTarjanResult(resultado)) return 'bg-red-50';
     if (isPlanaridadeResult(resultado)) return 'bg-cyan-50';
+    if (isAGResult(resultado)) return 'bg-purple-50';
     return 'bg-purple-50'; // Prim
   };
 
@@ -219,6 +249,7 @@ function AlgoritmoResultado({
     if (isAStarResult(resultado)) return 'bg-yellow-500';
     if (isHopcroftTarjanResult(resultado)) return 'bg-red-500';
     if (isPlanaridadeResult(resultado)) return 'bg-cyan-500';
+    if (isAGResult(resultado)) return 'bg-purple-500';
     return 'bg-purple-500'; // Prim
   };
 
@@ -240,6 +271,8 @@ function AlgoritmoResultado({
         return 'HOPCROFT-TARJAN (PONTES E ARTICULAÇÕES)';
       case 'planaridade':
         return 'VERIFICAÇÃO DE PLANARIDADE';
+      case 'ag':
+        return 'ALGORITMO GENÉTICO (PCV)';
       default:
         return algoritmoSelecionado.toUpperCase();
     }
@@ -254,6 +287,91 @@ function AlgoritmoResultado({
 
       {/* Controles do algoritmo */}
       <div className="mb-4">
+        {/* Configuração específica do AG */}
+        {algoritmoSelecionado === 'ag' && (
+          <div className="mb-4 bg-purple-50 p-3 rounded border border-purple-200">
+            <h5 className="font-medium text-purple-800 mb-3 text-sm">⚙️ Configuração do Algoritmo Genético</h5>
+            <div className="grid grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-gray-700 mb-1 font-medium">População (mín. 100):</label>
+                <input
+                  type="number"
+                  min="100"
+                  value={configAG.tamanhoPopulacao}
+                  onChange={(e) => setConfigAG({...configAG, tamanhoPopulacao: Math.max(100, Number(e.target.value))})}
+                  className="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1 font-medium">Gerações (mín. 20):</label>
+                <input
+                  type="number"
+                  min="20"
+                  value={configAG.numeroGeracoes}
+                  onChange={(e) => setConfigAG({...configAG, numeroGeracoes: Math.max(20, Number(e.target.value))})}
+                  className="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1 font-medium">Elitismo:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={configAG.elitismo}
+                  onChange={(e) => setConfigAG({...configAG, elitismo: Number(e.target.value)})}
+                  className="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1 font-medium">Taxa Cruzamento (60-80%):</label>
+                <input
+                  type="number"
+                  min="60"
+                  max="80"
+                  step="1"
+                  value={(configAG.taxaCruzamento * 100).toFixed(0)}
+                  onChange={(e) => setConfigAG({...configAG, taxaCruzamento: Number(e.target.value) / 100})}
+                  className="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1 font-medium">Taxa Mutação (0.5-1%):</label>
+                <input
+                  type="number"
+                  min="0.5"
+                  max="1"
+                  step="0.1"
+                  value={(configAG.taxaMutacao * 100).toFixed(1)}
+                  onChange={(e) => setConfigAG({...configAG, taxaMutacao: Number(e.target.value) / 100})}
+                  className="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1 font-medium">Pontos PMX [p1, p2]:</label>
+                <div className="flex gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="5"
+                    value={configAG.pontosCruzamento[0]}
+                    onChange={(e) => setConfigAG({...configAG, pontosCruzamento: [Number(e.target.value), configAG.pontosCruzamento[1]]})}
+                    className="w-1/2 px-1 py-1 border rounded text-center focus:ring-2 focus:ring-purple-500"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="8"
+                    value={configAG.pontosCruzamento[1]}
+                    onChange={(e) => setConfigAG({...configAG, pontosCruzamento: [configAG.pontosCruzamento[0], Number(e.target.value)]})}
+                    className="w-1/2 px-1 py-1 border rounded text-center focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="flex gap-2 items-end">
           {algoritmoSelecionado !== 'componentes' && algoritmoSelecionado !== 'welshPowell' && algoritmoSelecionado !== 'hopcroftTarjan' && algoritmoSelecionado !== 'planaridade' && (
             <div className="flex-1">
@@ -353,6 +471,8 @@ function AlgoritmoResultado({
             <ResultadoHopcroftTarjan resultado={resultado} />
           ) : isPlanaridadeResult(resultado) ? (
             <ResultadoPlanaridade resultado={resultado} />
+          ) : isAGResult(resultado) ? (
+            <ResultadoAG resultado={resultado} />
           ) : (
             <ResultadoPrim resultado={resultado as PrimResult} />
           )}
